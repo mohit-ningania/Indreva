@@ -1,0 +1,403 @@
+/* ==========================================================================
+   Reusable components: wordmark, nav, buttons, cards, cursor, progress,
+   forms, transition overlay
+   ========================================================================== */
+
+/* ---- Wordmark / logo lockup ---- */
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  color: var(--text-on-charcoal-strong);
+}
+
+.wordmark__mark {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.wordmark__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.wordmark__primary {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  letter-spacing: var(--track-wordmark);
+  text-transform: uppercase;
+}
+
+.wordmark__secondary {
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--c-steel-grey);
+}
+
+/* ---- Primary nav ---- */
+.primary-nav { display: flex; align-items: center; gap: var(--sp-7); }
+
+.nav-links { display: flex; align-items: center; gap: var(--sp-6); }
+
+.nav-links a {
+  position: relative;
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--text-on-charcoal);
+  padding-block: var(--sp-1);
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 100%;
+  bottom: -2px;
+  height: 1px;
+  background: var(--c-ice-blue);
+  transition: right var(--dur-base) var(--ease-precision);
+}
+
+.nav-links a:hover::after,
+.nav-links a[aria-current="page"]::after { right: 0; }
+
+.nav-links a[aria-current="page"] { color: var(--c-ice-blue); }
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-6);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: transform var(--dur-fast) var(--ease-out-soft),
+              background var(--dur-fast) var(--ease-precision),
+              border-color var(--dur-fast) var(--ease-precision),
+              color var(--dur-fast) var(--ease-precision);
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.btn:hover { transform: translate(2px, -2px); }
+
+.btn--accent {
+  background: var(--c-ice-blue);
+  color: var(--c-charcoal);
+}
+.btn--accent:hover { background: #bcd6e6; }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-on-charcoal-strong);
+  border-color: var(--border-on-dark);
+}
+.btn--ghost:hover {
+  border-color: var(--c-ice-blue);
+  color: var(--c-ice-blue);
+}
+
+.btn--ghost-dark {
+  background: transparent;
+  color: var(--text-on-platinum);
+  border-color: var(--border-on-light);
+}
+.btn--ghost-dark:hover {
+  border-color: var(--c-deep-blue-grey);
+  color: var(--c-deep-blue-grey);
+}
+
+.btn__arrow { transition: transform var(--dur-fast) var(--ease-out-soft); }
+.btn:hover .btn__arrow { transform: translate(3px, -3px); }
+
+/* ---- Mobile nav toggle ---- */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  z-index: var(--z-header);
+}
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--c-chrome-silver);
+  transition: transform var(--dur-fast) var(--ease-precision), opacity var(--dur-fast);
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ---- Mobile overlay menu ---- */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--c-charcoal);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--sp-8) var(--container-pad);
+  visibility: hidden;
+  /* No static `transform` here: GSAP's xPercent tween owns this element's
+     transform entirely (see nav.js). If CSS sets an initial translateX,
+     GSAP parses it as a fixed pixel baseline on first tween and stacks its
+     own xPercent translation on top of it instead of replacing it, leaving
+     the panel stuck off-screen after the "open" tween completes. */
+}
+
+.nav-overlay.is-open { visibility: visible; }
+
+.nav-overlay__links { display: flex; flex-direction: column; gap: var(--sp-5); }
+
+.nav-overlay__links a {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  text-transform: uppercase;
+  letter-spacing: var(--track-tight);
+  color: var(--text-on-charcoal-strong);
+}
+
+.nav-overlay__cta { margin-top: var(--sp-7); align-self: flex-start; }
+
+/* ---- Cards ---- */
+.card {
+  padding: var(--sp-6);
+  border: 1px solid var(--border-on-dark);
+  border-radius: 2px;
+  background: rgba(46, 58, 70, 0.28);
+  backdrop-filter: blur(6px);
+}
+
+.card--light {
+  background: rgba(243, 244, 246, 0.04);
+  border-color: var(--border-on-dark);
+}
+
+.card__index {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
+  color: var(--c-ice-blue);
+  margin-bottom: var(--sp-4);
+}
+
+.card__title {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--sp-3);
+}
+
+.card__body {
+  color: var(--c-chrome-silver);
+  font-size: var(--fs-sm);
+}
+
+/* ---- Diagonal clip utility (the recurring movement motif) ---- */
+.diagonal-edge {
+  clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
+}
+
+/* ---- Custom cursor (desktop only, injected by JS) ---- */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  z-index: var(--z-cursor);
+  transform: translate(-50%, -50%);
+  clip-path: polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+  background: var(--c-chrome-silver);
+  mix-blend-mode: difference;
+  transition: width var(--dur-fast) var(--ease-out-soft),
+              height var(--dur-fast) var(--ease-out-soft),
+              background var(--dur-fast) var(--ease-out-soft);
+  will-change: transform;
+}
+
+.cursor.is-active {
+  width: 34px;
+  height: 34px;
+  background: var(--c-ice-blue);
+}
+
+.cursor.is-hidden { opacity: 0; }
+
+/* ---- Scroll progress ---- */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  z-index: var(--z-progress);
+  background: transparent;
+}
+.scroll-progress__bar {
+  height: 100%;
+  width: 0%;
+  background: var(--c-ice-blue);
+  transform-origin: left;
+  box-shadow: 0 0 12px rgba(169, 198, 218, 0.6);
+}
+
+/* ---- Page transition overlay (diagonal wipe) ---- */
+.transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-transition);
+  pointer-events: none;
+  visibility: hidden;
+}
+.transition-overlay__panel {
+  position: absolute;
+  inset: -10% -10%;
+  background: var(--c-charcoal);
+  clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  transform: skewX(-8deg);
+}
+
+/* ---- Forms ---- */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+.form-field label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-chrome-silver);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  font: inherit;
+  font-size: var(--fs-base);
+  color: var(--text-on-charcoal-strong);
+  background: rgba(243, 244, 246, 0.03);
+  border: 1px solid var(--border-on-dark);
+  border-radius: 2px;
+  padding: var(--sp-4);
+  min-height: 44px;
+  transition: border-color var(--dur-fast) var(--ease-precision), background var(--dur-fast);
+}
+
+.form-field textarea { min-height: 128px; resize: vertical; }
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--c-ice-blue);
+  background: rgba(169, 198, 218, 0.05);
+}
+
+.form-field input:invalid[data-touched="true"],
+.form-field textarea:invalid[data-touched="true"] {
+  border-color: #C97B63;
+}
+
+.form-error {
+  font-size: var(--fs-2xs);
+  color: #E0A98C;
+  min-height: 1em;
+}
+
+.form-status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border: 1px solid var(--c-ice-blue);
+  border-radius: 2px;
+  color: var(--c-ice-blue);
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.form-status.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ---- Chapter marker (the storyline thread that runs through every page) ---- */
+.chapter-marker {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-steel-grey);
+}
+.chapter-marker__num {
+  color: var(--c-ice-blue);
+  font-family: var(--font-display);
+}
+.chapter-marker__bar {
+  width: 28px;
+  height: 1px;
+  background: var(--border-on-dark);
+  position: relative;
+  overflow: hidden;
+}
+.chapter-marker__bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: var(--chapter-progress, 16%);
+  background: var(--c-ice-blue);
+}
+
+/* ---- Trust strip / meta list ---- */
+.meta-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-6);
+  border-top: 1px solid var(--border-on-dark);
+  border-bottom: 1px solid var(--border-on-dark);
+  padding-block: var(--sp-6);
+}
+
+.meta-list__item { display: flex; flex-direction: column; gap: var(--sp-2); }
+.meta-list__value {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  color: var(--c-ice-blue);
+}
+.meta-list__label {
+  font-size: var(--fs-xs);
+  color: var(--c-steel-grey);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+@media (max-width: 860px) {
+  .meta-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .nav-links, .primary-nav .btn--accent.header-cta { display: none; }
+  .nav-toggle { display: flex; }
+}

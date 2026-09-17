@@ -1,0 +1,145 @@
+/* ==========================================================================
+   Structural layout: canvas layer, header, footer, container, grids
+   ========================================================================== */
+
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+/* ---- Persistent WebGL / fallback canvas layer ----
+   Sits behind all DOM content, fixed to viewport, spans the whole
+   scroll journey. z-index below content, above body background. */
+#scene-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+}
+
+#scene-fallback {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 15% 0%, rgba(169, 198, 218, 0.16), transparent 55%),
+    radial-gradient(140% 100% at 100% 100%, rgba(92, 114, 133, 0.35), transparent 60%),
+    linear-gradient(160deg, var(--c-charcoal) 0%, var(--c-deep-blue-grey) 55%, var(--c-charcoal) 100%);
+}
+
+/* ---- Diagonal linework layer (mid parallax depth) ---- */
+.linework {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-linework);
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    -34deg,
+    rgba(184, 188, 194, 0.05) 0px,
+    rgba(184, 188, 194, 0.05) 1px,
+    transparent 1px,
+    transparent 88px
+  );
+  will-change: transform;
+}
+
+main {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* ---- Header ---- */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-5) var(--container-pad);
+  background: rgba(28, 33, 38, 0.35);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid transparent;
+  transition: padding var(--dur-base) var(--ease-precision),
+              background var(--dur-base) var(--ease-precision),
+              border-color var(--dur-base) var(--ease-precision);
+}
+
+.site-header.is-condensed {
+  padding-block: var(--sp-3);
+  background: rgba(28, 33, 38, 0.72);
+  border-bottom-color: var(--border-on-dark);
+}
+
+.site-footer {
+  position: relative;
+  z-index: var(--z-content);
+  background: var(--c-charcoal);
+  color: var(--text-on-charcoal);
+  padding: var(--sp-9) var(--container-pad) var(--sp-6);
+  border-top: 1px solid var(--border-on-dark);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: var(--sp-7);
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-bottom: var(--sp-8);
+}
+
+.footer-bottom {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--border-on-dark);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  justify-content: space-between;
+  font-size: var(--fs-xs);
+  color: var(--c-steel-grey);
+}
+
+@media (max-width: 860px) {
+  .footer-grid { grid-template-columns: 1fr; gap: var(--sp-6); }
+}
+
+/* ---- Section rhythm ---- */
+.chapter {
+  position: relative;
+  z-index: var(--z-content);
+  padding-block: var(--sp-10);
+}
+
+.chapter--tight { padding-block: var(--sp-8); }
+
+.section-head {
+  max-width: 46rem;
+  margin-bottom: var(--sp-7);
+}
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-7); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-5); }
+
+@media (max-width: 1024px) {
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .chapter { padding-block: var(--sp-8); }
+}

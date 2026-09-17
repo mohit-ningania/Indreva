@@ -1,0 +1,112 @@
+/* ---- Vision — deepest, darkest page ---- */
+body[data-page="vision"] { background: var(--c-charcoal); }
+
+.vision-hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.vision-hero__title {
+  font-size: clamp(2.5rem, 7vw, var(--fs-5xl));
+  max-width: 18ch;
+  color: var(--text-on-charcoal-strong);
+  text-shadow: 0 4px 30px rgba(28, 33, 38, 0.85), 0 1px 3px rgba(28, 33, 38, 0.9);
+}
+.vision-hero__lede {
+  margin-top: var(--sp-6);
+  max-width: 40rem;
+  font-size: var(--fs-md);
+  color: var(--c-chrome-silver);
+  text-shadow: 0 2px 16px rgba(28, 33, 38, 0.7);
+}
+
+.horizon {
+  margin-top: -10svh;
+}
+
+/* ---- Horizontal scroll-jacked growth path ----
+   .horizon-track holds four .horizon-stage panels side by side; a pinned
+   wrapper (.horizon-pin) is translated on the X axis by GSAP as the user
+   scrolls through its extended vertical scroll-height. See vision.js. */
+.horizon-pin {
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.horizon-track {
+  display: flex;
+  will-change: transform;
+}
+
+.horizon-stage {
+  flex: 0 0 100vw;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--container-pad);
+}
+
+.horizon-stage__inner { max-width: 34rem; }
+
+.horizon-stage__num {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
+  color: var(--c-ice-blue);
+  margin-bottom: var(--sp-4);
+}
+
+.horizon-stage__title {
+  font-size: clamp(2rem, 4.4vw, var(--fs-3xl));
+  color: var(--text-on-charcoal-strong);
+}
+
+.horizon-stage__body {
+  margin-top: var(--sp-5);
+  color: var(--c-chrome-silver);
+  font-size: var(--fs-md);
+}
+
+.horizon-progress {
+  position: absolute;
+  bottom: var(--sp-6);
+  left: var(--container-pad);
+  display: flex;
+  gap: var(--sp-2);
+}
+.horizon-progress__dot {
+  width: 32px;
+  height: 2px;
+  background: var(--border-on-dark);
+  transition: background var(--dur-base) var(--ease-precision);
+}
+.horizon-progress__dot.is-active { background: var(--c-ice-blue); }
+
+.timeline-note {
+  padding-block: var(--sp-9);
+  text-align: center;
+}
+.timeline-note p {
+  max-width: 30rem;
+  margin-inline: auto;
+  color: var(--c-steel-grey);
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 720px) {
+  .horizon-pin { height: auto; }
+  .horizon-track { flex-direction: column; }
+  .horizon-stage { flex: 0 0 auto; min-height: 70svh; }
+}
+
+/* Horizontal scroll-jacking is a strong vestibular trigger — stack the
+   growth-path stages as a plain vertical flow instead when requested. */
+@media (prefers-reduced-motion: reduce) {
+  .horizon-pin { height: auto !important; }
+  .horizon-track { flex-direction: column; transform: none !important; }
+  .horizon-stage { flex: 0 0 auto; min-height: auto; padding-block: var(--sp-8); }
+  .horizon-progress { display: none; }
+}

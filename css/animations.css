@@ -1,0 +1,45 @@
+/* ==========================================================================
+   Reveal base-states. GSAP drives the actual tween; these classes only
+   define the "before" state so content isn't invisible without JS.
+   ========================================================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.reveal.is-ready { transition: opacity var(--dur-slow) var(--ease-out-soft), transform var(--dur-slow) var(--ease-out-soft); }
+
+/* No-JS / pre-hydration fallback: never trap content invisible */
+.no-js .reveal,
+.reveal.reveal--fallback {
+  opacity: 1;
+  transform: none;
+}
+
+.split-word,
+.split-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* Diagonal wipe divider between major sections */
+.section-wipe {
+  position: relative;
+  height: 140px;
+  margin-block: calc(var(--sp-9) * -1) 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.section-wipe::before {
+  content: '';
+  position: absolute;
+  inset: -20% 0 0 0;
+  background: var(--c-charcoal);
+  transform: skewY(-3deg);
+}
+

@@ -1,0 +1,29 @@
+/* ---- Contact ---- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr;
+  gap: var(--sp-8);
+  align-items: start;
+}
+
+.contact-info { display: flex; flex-direction: column; gap: var(--sp-7); }
+
+.contact-info__item h3 {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
+  color: var(--c-ice-blue);
+  margin-bottom: var(--sp-3);
+}
+.contact-info__item p,
+.contact-info__item a { color: var(--c-chrome-silver); font-size: var(--fs-md); }
+
+.contact-form { position: relative; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+
+@media (max-width: 900px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .form-row { grid-template-columns: 1fr; }
+}

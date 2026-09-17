@@ -1,0 +1,9 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Indreva Trade Group">
+  <rect width="64" height="64" rx="10" fill="#1C2126"/>
+  <g transform="translate(8,4)">
+    <polygon points="3,13 7,11 9,27 5,29" fill="#B8BCC2"/>
+    <polygon points="4,4 8,3 9,8 5,9" fill="#A9C6DA"/>
+    <polygon points="12,4 16,4 21,29 17,29" fill="#B8BCC2"/>
+    <polygon points="29,4 25,4 19,29 23,29" fill="#8A929B"/>
+  </g>
+</svg>

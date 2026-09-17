@@ -1,0 +1,85 @@
+/* ==========================================================================
+   INDREVA TRADE GROUP — Design tokens
+   Palette, type scale, spacing, easing. Every colour used on the site
+   must resolve to one of the tokens below — no raw hex outside this file.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand palette (exact values — do not alter) ---- */
+  --c-chrome-silver: #B8BCC2;
+  --c-deep-blue-grey: #2E3A46;
+  --c-slate-blue: #5C7285;
+  --c-platinum-white: #F3F4F6;
+  --c-steel-grey: #8A929B;
+  --c-charcoal: #1C2126;
+  --c-ice-blue: #A9C6DA;
+
+  /* ---- Semantic tokens (pairing rules enforced here, not per-component) ---- */
+  --bg-charcoal: var(--c-charcoal);
+  --bg-deep: var(--c-deep-blue-grey);
+  --bg-platinum: var(--c-platinum-white);
+  --bg-slate: var(--c-slate-blue);
+
+  --text-on-charcoal: var(--c-chrome-silver);
+  --text-on-charcoal-strong: var(--c-platinum-white);
+  --text-on-deep: var(--c-chrome-silver);
+  --text-on-platinum: var(--c-charcoal);
+  --text-on-platinum-muted: var(--c-deep-blue-grey);
+
+  --accent: var(--c-ice-blue);
+  --accent-on-dark: var(--c-ice-blue);
+
+  --border-on-dark: rgba(184, 188, 194, 0.18);
+  --border-on-light: rgba(46, 58, 70, 0.14);
+
+  /* ---- Typography ---- */
+  --font-display: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --track-wordmark: 0.09em;
+  --track-label: 0.22em;
+  --track-tight: -0.01em;
+
+  --fs-2xs: 0.6875rem;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9375rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.5rem;
+  --fs-3xl: 3.5rem;
+  --fs-4xl: 4.75rem;
+  --fs-5xl: 6.5rem;
+
+  /* ---- Spacing scale ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4.5rem;
+  --sp-9: 6.5rem;
+  --sp-10: 9rem;
+
+  --container-max: 1440px;
+  --container-pad: clamp(1.25rem, 4vw, 4rem);
+
+  /* ---- Motion ---- */
+  --ease-precision: cubic-bezier(0.65, 0, 0.15, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-soft: cubic-bezier(0.7, 0, 0.84, 0);
+  --dur-fast: 220ms;
+  --dur-base: 420ms;
+  --dur-slow: 640ms;
+
+  --z-canvas: 1;
+  --z-linework: 2;
+  --z-content: 10;
+  --z-header: 100;
+  --z-transition: 200;
+  --z-cursor: 300;
+  --z-progress: 250;
+}
