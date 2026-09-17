@@ -1,23 +1,50 @@
 /**
- * Builds the "iV" monogram as extruded angular parallelogram slabs —
- * brushed-metal geometry, not text. Each slab carries userData describing
- * its ASSEMBLED (home-position) transform and a DISPERSAL vector/rotation
- * used by the scroll rig to separate/reassemble the mark. Tune the numbers
- * in SLAB_DEFS to reshape the mark or its break-apart motion.
+ * Builds the Indreva monogram as extruded angular slabs — brushed-metal
+ * geometry, not text. Each slab's 2D outline is copied point-for-point from
+ * the brand identity PDF's own icon construction (flag, stem, and two
+ * converging strokes), in the same 0-104 coordinate space as
+ * assets/favicons/mark.svg, so the 3D mark and the flat logo always agree.
+ * Each slab also carries userData describing its ASSEMBLED (home-position)
+ * transform and a DISPERSAL vector/rotation used by the scroll rig to
+ * separate/reassemble the mark.
  */
 import * as THREE from '../vendor/three.module.min.js';
 
+// Same coordinate space as assets/favicons/mark.svg (viewBox 0 0 104 104).
+// Edit these points to reshape the mark — keep favicon/wordmark SVGs in sync.
+const MARK_SPACE = 104;
+const BRAND_SLABS = [
+  { key: 'flag', points: [[13, 10], [32, 8], [26, 18], [7, 20]] },
+  { key: 'stem', points: [[11, 27], [21, 25], [14, 96], [4, 98]] },
+  { key: 'stroke-left', points: [[37, 19], [53, 19], [65, 92], [49, 92]] },
+  { key: 'stroke-right', points: [[99, 19], [83, 19], [65, 92], [81, 92]] },
+];
+
+/** World-space scale for the whole mark; MARK_SPACE units map to this many Three.js units tall. */
+const WORLD_SCALE = 2.35 / 90;
+
 /**
- * A parallelogram shape (rectangle with sheared left/right edges) extruded
- * to a slab. `skew` shears the top edge relative to the bottom, giving the
- * angular "diagonal cut" look the brand calls for instead of plain blocks.
+ * Converts one slab's raw brand-space points into: (a) a flat 2D outline
+ * already centered on its own bounding-box, ready to extrude, and (b) the
+ * assembled world-space position that recovers the original layout once
+ * that centered geometry is placed there. Keeps the extrusion math generic
+ * (any polygon) instead of assuming a symmetric parallelogram.
  */
-function parallelogramGeometry(width, height, depth, skew) {
+function localizeSlab(points) {
+  const xs = points.map((p) => p[0]);
+  const ys = points.map((p) => p[1]);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  // Brand-space is y-down (SVG); Three.js world is y-up — flip on the way in.
+  const local = points.map(([x, y]) => [(x - cx) * WORLD_SCALE, -(y - cy) * WORLD_SCALE]);
+  const markCenter = MARK_SPACE / 2;
+  const worldPosition = [(cx - markCenter) * WORLD_SCALE, -(cy - markCenter) * WORLD_SCALE, 0];
+  return { local, worldPosition };
+}
+
+function polygonGeometry(localPoints, depth) {
   const shape = new THREE.Shape();
-  shape.moveTo(-width / 2 - skew, -height / 2);
-  shape.lineTo(width / 2 - skew, -height / 2);
-  shape.lineTo(width / 2 + skew, height / 2);
-  shape.lineTo(-width / 2 + skew, height / 2);
+  localPoints.forEach(([x, y], i) => (i === 0 ? shape.moveTo(x, y) : shape.lineTo(x, y)));
   shape.closePath();
 
   const geo = new THREE.ExtrudeGeometry(shape, {
@@ -28,29 +55,29 @@ function parallelogramGeometry(width, height, depth, skew) {
     bevelSegments: 2,
     curveSegments: 1,
   });
-  geo.center();
+  geo.center(); // centers Z (depth); X/Y are already centered by localizeSlab
   return geo;
 }
 
+const SLAB_DEPTH = 0.34;
+
 /**
- * Slab definitions. position/rotation = the ASSEMBLED "iV" reading.
- * dispersal = unit-ish direction the slab drifts toward at full scatter,
- * plus the extra rotation it picks up along the way.
- * Edit these to reshape the mark — geometry math lives above, untouched.
+ * Slab definitions: exact brand geometry (position below) plus the
+ * DISPERSAL vector/rotation each slab drifts toward at full scatter.
+ * Edit dispersal values to reshape the break-apart motion — the assembled
+ * reading itself is locked to BRAND_SLABS above.
  */
-const SLAB_DEFS = [
-  // "i" stem
-  { key: 'i-stem', size: [0.34, 1.7, 0.32], skew: 0.05, position: [-1.05, -0.15, 0], rotation: [0, 0, 0.02], dispersal: { dir: [-2.6, 1.8, -1.4], rot: [0.4, 0.9, 0.2] } },
-  // "i" dot
-  { key: 'i-dot', size: [0.36, 0.36, 0.32], skew: 0.06, position: [-1.05, 1.15, 0], rotation: [0, 0, 0.02], dispersal: { dir: [-1.8, 3.1, 0.8], rot: [0.7, -0.6, 0.3] } },
-  // "V" left stroke
-  { key: 'v-left', size: [0.36, 1.9, 0.32], skew: -0.28, position: [0.15, -0.05, 0], rotation: [0, 0, 0.34], dispersal: { dir: [1.1, 2.2, 1.6], rot: [-0.5, 0.4, -0.3] } },
-  // "V" right stroke
-  { key: 'v-right', size: [0.36, 1.9, 0.32], skew: 0.28, position: [1.05, -0.05, 0], rotation: [0, 0, -0.34], dispersal: { dir: [2.8, 1.6, -1.1], rot: [0.3, -0.7, 0.5] } },
-  // Two small accent fragments — pure motif, thicken the "route lines" formation mid-site
-  { key: 'fragment-a', size: [0.5, 0.2, 0.3], skew: 0.18, position: [1.9, 0.9, -0.3], rotation: [0, 0, 0.5], dispersal: { dir: [3.4, -2.1, 2.2], rot: [0.9, 0.2, 0.6] } },
-  { key: 'fragment-b', size: [0.44, 0.18, 0.3], skew: -0.16, position: [-2.0, -1.0, 0.3], rotation: [0, 0, -0.42], dispersal: { dir: [-3.1, -2.4, -1.8], rot: [-0.6, 0.8, -0.4] } },
-];
+const SLAB_DEFS = BRAND_SLABS.map((def) => {
+  const { local, worldPosition } = localizeSlab(def.points);
+  return { ...def, local, position: worldPosition };
+});
+
+const DISPERSAL = {
+  flag: { dir: [-1.8, 3.1, 0.8], rot: [0.7, -0.6, 0.3] },
+  stem: { dir: [-2.6, 1.8, -1.4], rot: [0.4, 0.9, 0.2] },
+  'stroke-left': { dir: [1.1, 2.2, 1.6], rot: [-0.5, 0.4, -0.3] },
+  'stroke-right': { dir: [2.8, 1.6, -1.1], rot: [0.3, -0.7, 0.5] },
+};
 
 function buildEnvironment(renderer) {
   // Procedural gradient "studio" environment (no external HDR fetch) so the
@@ -95,15 +122,17 @@ export function createMonogram(renderer) {
   });
 
   const slabs = SLAB_DEFS.map((def) => {
-    const geo = parallelogramGeometry(def.size[0], def.size[1], def.size[2], def.skew);
+    // The 2D outline already carries the correct tilt/skew from the brand
+    // mark, so the assembled rotation is always identity — only dispersal
+    // adds rotation, as the slab flies apart.
+    const geo = polygonGeometry(def.local, SLAB_DEPTH);
     const mesh = new THREE.Mesh(geo, material);
     mesh.name = def.key;
     mesh.position.set(...def.position);
-    mesh.rotation.set(...def.rotation);
     mesh.userData.assembledPosition = def.position;
-    mesh.userData.assembledRotation = def.rotation;
-    mesh.userData.dispersalDir = def.dispersal.dir;
-    mesh.userData.dispersalRot = def.dispersal.rot;
+    mesh.userData.assembledRotation = [0, 0, 0];
+    mesh.userData.dispersalDir = DISPERSAL[def.key].dir;
+    mesh.userData.dispersalRot = DISPERSAL[def.key].rot;
     group.add(mesh);
     return mesh;
   });

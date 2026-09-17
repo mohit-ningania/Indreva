@@ -35,6 +35,8 @@
   /* ---- Typography ---- */
   --font-display: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Reserved for the "INDREVA" logotype only, per brand identity — never used for running headings. */
+  --font-wordmark: 'Michroma', var(--font-display);
 
   --track-wordmark: 0.09em;
   --track-label: 0.22em;

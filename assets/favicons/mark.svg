@@ -1,6 +1,6 @@
-<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Indreva iV monogram">
-  <polygon points="3,13 7,11 9,27 5,29" fill="#B8BCC2"/>
-  <polygon points="4,4 8,3 9,8 5,9" fill="#A9C6DA"/>
-  <polygon points="12,4 16,4 21,29 17,29" fill="#B8BCC2"/>
-  <polygon points="29,4 25,4 19,29 23,29" fill="#8A929B"/>
+<svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Indreva monogram">
+  <polygon points="13,10 32,8 26,18 7,20" fill="#A9C6DA"/>
+  <polygon points="11,27 21,25 14,96 4,98" fill="#B8BCC2"/>
+  <polygon points="37,19 53,19 65,92 49,92" fill="#B8BCC2"/>
+  <polygon points="99,19 83,19 65,92 81,92" fill="#8A929B"/>
 </svg>

@@ -23,11 +23,13 @@
   line-height: 1;
 }
 
+/* Michroma is reserved for this logotype alone — never for running
+   headings — per the brand identity's wordmark construction rules. */
 .wordmark__primary {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-md);
-  letter-spacing: var(--track-wordmark);
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -39,6 +41,22 @@
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--c-steel-grey);
+  max-height: 2em;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height var(--dur-base) var(--ease-precision),
+              opacity var(--dur-fast) var(--ease-precision),
+              margin-top var(--dur-base) var(--ease-precision);
+}
+
+/* Scrolled header switches to the brand's "short wordmark" — icon + INDREVA
+   only, no "TRADE GROUP" subtext — matching the Full Logo vs Icon-Only
+   usage rule ("website footer or scrolled header, after full name has
+   already appeared on load"). */
+.site-header.is-condensed .wordmark__secondary {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
 }
 
 /* ---- Primary nav ---- */
