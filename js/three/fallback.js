@@ -1,33 +1,51 @@
 /**
- * Static/low-cost fallback for low-end devices, saveData, or reduced motion.
- * No Three.js is ever imported in this path. `#scene-fallback` (a CSS
- * gradient, see layout.css) is already visible by default; this only adds
- * an optional, very cheap ambient drift — skipped entirely under
- * prefers-reduced-motion.
+ * The flowy blob background (#scene-fallback, see layout.css) is always
+ * mounted — it's the site's permanent backdrop, not just a no-WebGL
+ * substitute. This module has two small, independent jobs:
+ *
+ *   initFallback()    — cleanup for the no-WebGL path: drop the now-unused
+ *                        <canvas> so it isn't sitting in the DOM doing nothing.
+ *   initFlowyVideo()  — optional upgrade: point the background's <video> at
+ *                        the Flow-generated clip for this page's tone and
+ *                        fade it in once it actually has a frame to show.
+ *                        If the file doesn't exist yet, the video simply
+ *                        never fires `loadeddata` and stays invisible —
+ *                        the CSS blobs underneath keep showing, no error
+ *                        handling required.
  */
 import { capabilities } from '../core/device.js';
 
 export function initFallback() {
-  const el = document.getElementById('scene-fallback');
-  if (!el) return;
-
   document.getElementById('scene-canvas')?.remove();
+}
 
-  if (capabilities.reducedMotion) return;
+export function initFlowyVideo(pageKey) {
+  const video = document.querySelector('#scene-fallback .flowy-bg__video');
+  if (!video) return;
+  if (capabilities.reducedMotion || capabilities.saveData) return;
 
-  let raf;
-  let t = 0;
-  function tick() {
-    t += 0.0015;
-    const x = 15 + Math.sin(t) * 6;
-    const y = 85 + Math.cos(t * 0.8) * 6;
-    el.style.backgroundPosition = `${x}% 0%, ${y}% 100%, 0 0`;
-    raf = requestAnimationFrame(tick);
-  }
-  tick();
+  const tone = pageKey === 'vision' ? 'vision' : 'light';
+  const src = `assets/video/flow-${tone}.mp4`;
+  const poster = `assets/video/flow-${tone}-poster.jpg`;
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) cancelAnimationFrame(raf);
-    else tick();
-  });
+  if (video.dataset.tone === tone) return; // already pointed at the right clip
+  video.dataset.tone = tone;
+  video.classList.remove('is-ready');
+
+  // The poster shows natively the instant it loads, well before the video
+  // itself is ready — fade the layer in as soon as either one exists so
+  // there's no flash of empty background while the clip buffers.
+  video.poster = poster;
+  const posterProbe = new Image();
+  posterProbe.onload = () => video.classList.add('is-ready');
+  posterProbe.src = poster;
+
+  video.innerHTML = '';
+  const source = document.createElement('source');
+  source.src = src;
+  source.type = 'video/mp4';
+  video.appendChild(source);
+  video.load();
+  video.addEventListener('loadeddata', () => video.classList.add('is-ready'), { once: true });
+  video.play().catch(() => {}); // autoplay can be blocked; blobs remain the visible background either way
 }

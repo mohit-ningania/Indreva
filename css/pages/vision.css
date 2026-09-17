@@ -1,6 +1,7 @@
-/* ---- Vision — deepest, darkest page ---- */
-body[data-page="vision"] { background: var(--c-charcoal); }
-
+/* ---- Vision — deepest, darkest page ----
+   The dark surface itself (background/text/border token overrides) is set
+   once in base.css (body[data-page="vision"]); this file only holds the
+   page's own layout and the handful of colours not covered by those tokens. */
 .vision-hero {
   min-height: 100svh;
   display: flex;

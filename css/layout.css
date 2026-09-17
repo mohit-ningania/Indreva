@@ -20,17 +20,101 @@
   pointer-events: none;
 }
 
+/* ---- Flowy ambient background ----
+   The site's actual visible backdrop: a slow-drifting soft gradient of
+   blurred colour fields (ice-blue / platinum / steel-grey), sitting behind
+   the WebGL canvas and everything else. Replaces a flat fill on every page;
+   Vision re-tones it dark via body[data-page="vision"] (see components.css
+   for the blob colours). An optional <video> layer (see contact/vision/home
+   markup) upgrades this once a Flow-generated clip is supplied — until then
+   it has no playable source and stays transparent, so the CSS blobs show
+   through untouched. */
 #scene-fallback {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: var(--z-canvas);
+  z-index: var(--z-canvas-bg);
   pointer-events: none;
-  background:
-    radial-gradient(120% 90% at 15% 0%, rgba(169, 198, 218, 0.16), transparent 55%),
-    radial-gradient(140% 100% at 100% 100%, rgba(92, 114, 133, 0.35), transparent 60%),
-    linear-gradient(160deg, var(--c-charcoal) 0%, var(--c-deep-blue-grey) 55%, var(--c-charcoal) 100%);
+  overflow: hidden;
+  background: var(--surface-bg);
+  transition: background var(--dur-slow) var(--ease-precision);
+}
+
+/* ---- Flowy blobs ----
+   Large, heavily blurred colour fields drifting on independent slow loops.
+   Pure CSS transform/opacity animation — no canvas, no per-frame JS cost.
+   Tones flip to the dark palette on body[data-page="vision"] below. */
+.flowy-bg__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(min(9vw, 90px));
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.flowy-bg__blob--1 {
+  top: -10%; left: -8%;
+  width: 46vw; height: 46vw;
+  background: radial-gradient(circle, var(--c-ice-blue), transparent 70%);
+  animation: flowy-drift-1 34s ease-in-out infinite;
+}
+.flowy-bg__blob--2 {
+  bottom: -15%; right: -10%;
+  width: 52vw; height: 52vw;
+  background: radial-gradient(circle, var(--c-slate-blue), transparent 70%);
+  opacity: 0.35;
+  animation: flowy-drift-2 40s ease-in-out infinite;
+}
+.flowy-bg__blob--3 {
+  top: 20%; right: 8%;
+  width: 30vw; height: 30vw;
+  background: radial-gradient(circle, var(--c-chrome-silver), transparent 70%);
+  opacity: 0.4;
+  animation: flowy-drift-3 28s ease-in-out infinite;
+}
+.flowy-bg__blob--4 {
+  bottom: 5%; left: 12%;
+  width: 26vw; height: 26vw;
+  background: radial-gradient(circle, var(--c-steel-grey), transparent 70%);
+  opacity: 0.3;
+  animation: flowy-drift-1 46s ease-in-out infinite reverse;
+}
+
+body[data-page="vision"] .flowy-bg__blob--1 { background: radial-gradient(circle, var(--c-deep-blue-grey), transparent 70%); opacity: 0.6; }
+body[data-page="vision"] .flowy-bg__blob--2 { background: radial-gradient(circle, var(--c-slate-blue), transparent 70%); opacity: 0.28; }
+body[data-page="vision"] .flowy-bg__blob--3 { background: radial-gradient(circle, var(--c-ice-blue), transparent 70%); opacity: 0.16; }
+body[data-page="vision"] .flowy-bg__blob--4 { background: radial-gradient(circle, var(--c-steel-grey), transparent 70%); opacity: 0.14; }
+
+@keyframes flowy-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6vw, 8vh) scale(1.12); }
+}
+@keyframes flowy-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-7vw, -6vh) scale(1.08); }
+}
+@keyframes flowy-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4vw, 5vh) scale(0.92); }
+}
+
+/* Optional Flow-generated video upgrade — see js/core/flowy-video.js.
+   No source until the file is supplied, so it stays transparent and the
+   blobs above show through untouched. */
+.flowy-bg__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-precision);
+}
+.flowy-bg__video.is-ready { opacity: 0.9; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flowy-bg__blob { animation: none; }
 }
 
 /* ---- Diagonal linework layer (mid parallax depth) ---- */
@@ -39,7 +123,18 @@
   inset: 0;
   z-index: var(--z-linework);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.6;
+  background-image: repeating-linear-gradient(
+    -34deg,
+    rgba(46, 58, 70, 0.06) 0px,
+    rgba(46, 58, 70, 0.06) 1px,
+    transparent 1px,
+    transparent 88px
+  );
+  will-change: transform;
+}
+
+body[data-page="vision"] .linework {
   background-image: repeating-linear-gradient(
     -34deg,
     rgba(184, 188, 194, 0.05) 0px,
@@ -47,7 +142,6 @@
     transparent 1px,
     transparent 88px
   );
-  will-change: transform;
 }
 
 main {
@@ -55,7 +149,10 @@ main {
   z-index: var(--z-content);
 }
 
-/* ---- Header ---- */
+/* ---- Header ----
+   Always light/translucent — the site's chrome stays constant even on the
+   dark Vision page, where it reads as a calm fixed frame around the one
+   deep chapter rather than blending into it. */
 .site-header {
   position: fixed;
   top: 0;
@@ -66,10 +163,11 @@ main {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-5) var(--container-pad);
-  background: rgba(28, 33, 38, 0.35);
+  background: rgba(243, 244, 246, 0.55);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid transparent;
+  color: var(--c-charcoal);
   transition: padding var(--dur-base) var(--ease-precision),
               background var(--dur-base) var(--ease-precision),
               border-color var(--dur-base) var(--ease-precision);
@@ -77,17 +175,17 @@ main {
 
 .site-header.is-condensed {
   padding-block: var(--sp-3);
-  background: rgba(28, 33, 38, 0.72);
-  border-bottom-color: var(--border-on-dark);
+  background: rgba(243, 244, 246, 0.88);
+  border-bottom-color: var(--border-on-light);
 }
 
 .site-footer {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-charcoal);
-  color: var(--text-on-charcoal);
+  background: var(--surface-bg-dark);
+  color: var(--surface-text-dark);
   padding: var(--sp-9) var(--container-pad) var(--sp-6);
-  border-top: 1px solid var(--border-on-dark);
+  border-top: 1px solid var(--surface-border-dark);
 }
 
 .footer-grid {
@@ -103,7 +201,7 @@ main {
   max-width: var(--container-max);
   margin-inline: auto;
   padding-top: var(--sp-5);
-  border-top: 1px solid var(--border-on-dark);
+  border-top: 1px solid var(--surface-border-dark);
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-4);

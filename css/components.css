@@ -3,13 +3,17 @@
    forms, transition overlay
    ========================================================================== */
 
-/* ---- Wordmark / logo lockup ---- */
+/* ---- Wordmark / logo lockup ----
+   Default (header, always light) is dark-on-light; the footer forces the
+   light-on-dark pairing back on since it stays a fixed dark zone. */
 .wordmark {
   display: inline-flex;
   align-items: baseline;
   gap: var(--sp-3);
-  color: var(--text-on-charcoal-strong);
+  color: var(--c-charcoal);
 }
+
+.site-footer .wordmark { color: var(--surface-text-dark-strong); }
 
 .wordmark__mark {
   width: 30px;
@@ -40,7 +44,7 @@
   font-weight: 600;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--c-steel-grey);
+  color: var(--c-slate-blue);
   max-height: 2em;
   opacity: 1;
   overflow: hidden;
@@ -48,6 +52,8 @@
               opacity var(--dur-fast) var(--ease-precision),
               margin-top var(--dur-base) var(--ease-precision);
 }
+
+.site-footer .wordmark__secondary { color: var(--c-steel-grey); }
 
 /* Scrolled header switches to the brand's "short wordmark" — icon + INDREVA
    only, no "TRADE GROUP" subtext — matching the Full Logo vs Icon-Only
@@ -71,7 +77,7 @@
   font-weight: 500;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: var(--text-on-charcoal);
+  color: var(--c-charcoal);
   padding-block: var(--sp-1);
 }
 
@@ -81,14 +87,14 @@
   left: 0; right: 100%;
   bottom: -2px;
   height: 1px;
-  background: var(--c-ice-blue);
+  background: var(--c-deep-blue-grey);
   transition: right var(--dur-base) var(--ease-precision);
 }
 
 .nav-links a:hover::after,
 .nav-links a[aria-current="page"]::after { right: 0; }
 
-.nav-links a[aria-current="page"] { color: var(--c-ice-blue); }
+.nav-links a[aria-current="page"] { color: var(--c-deep-blue-grey); }
 
 /* ---- Buttons ---- */
 .btn {
@@ -113,30 +119,44 @@
 
 .btn:hover { transform: translate(2px, -2px); }
 
+/* Default CTA is tuned for the site's light surface (Deep Blue-Grey fill —
+   pops against the flowy background better than a light Ice Blue fill
+   would). The nav overlay and the Vision page's own content are the site's
+   dark zones, so their CTAs flip back to the brief's dark-bg pairing
+   (Ice Blue fill, per "Deep Blue-Grey bg -> Ice Blue for CTAs"). */
 .btn--accent {
+  background: var(--c-deep-blue-grey);
+  color: var(--c-platinum-white);
+}
+.btn--accent:hover { background: #24303b; }
+
+.nav-overlay .btn--accent,
+body[data-page="vision"] #page-content .btn--accent {
   background: var(--c-ice-blue);
   color: var(--c-charcoal);
 }
-.btn--accent:hover { background: #bcd6e6; }
+.nav-overlay .btn--accent:hover,
+body[data-page="vision"] #page-content .btn--accent:hover { background: #bcd6e6; }
 
 .btn--ghost {
   background: transparent;
-  color: var(--text-on-charcoal-strong);
-  border-color: var(--border-on-dark);
-}
-.btn--ghost:hover {
-  border-color: var(--c-ice-blue);
-  color: var(--c-ice-blue);
-}
-
-.btn--ghost-dark {
-  background: transparent;
-  color: var(--text-on-platinum);
+  color: var(--c-charcoal);
   border-color: var(--border-on-light);
 }
-.btn--ghost-dark:hover {
+.btn--ghost:hover {
   border-color: var(--c-deep-blue-grey);
   color: var(--c-deep-blue-grey);
+}
+
+/* Reserved for ghost buttons placed on one of the site's dark zones. */
+.btn--ghost-on-dark {
+  background: transparent;
+  color: var(--surface-text-dark-strong);
+  border-color: var(--border-on-dark);
+}
+.btn--ghost-on-dark:hover {
+  border-color: var(--c-ice-blue);
+  color: var(--c-ice-blue);
 }
 
 .btn__arrow { transition: transform var(--dur-fast) var(--ease-out-soft); }
@@ -156,7 +176,7 @@
   display: block;
   width: 24px;
   height: 2px;
-  background: var(--c-chrome-silver);
+  background: var(--c-charcoal);
   transition: transform var(--dur-fast) var(--ease-precision), opacity var(--dur-fast);
 }
 .nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
@@ -196,25 +216,27 @@
 
 .nav-overlay__cta { margin-top: var(--sp-7); align-self: flex-start; }
 
-/* ---- Cards ---- */
+/* ---- Cards ----
+   Reads --surface-* tokens, so it adapts automatically inside the Vision
+   page's dark-flipped scope (see base.css) without its own override. */
 .card {
   padding: var(--sp-6);
-  border: 1px solid var(--border-on-dark);
+  border: 1px solid var(--surface-border);
   border-radius: 2px;
-  background: rgba(46, 58, 70, 0.28);
+  background: var(--surface-card-bg);
   backdrop-filter: blur(6px);
 }
 
 .card--light {
-  background: rgba(243, 244, 246, 0.04);
-  border-color: var(--border-on-dark);
+  background: rgba(46, 58, 70, 0.03);
+  border-color: var(--surface-border);
 }
 
 .card__index {
   font-family: var(--font-display);
   font-size: var(--fs-xs);
   letter-spacing: var(--track-label);
-  color: var(--c-ice-blue);
+  color: var(--accent-label);
   margin-bottom: var(--sp-4);
 }
 
@@ -224,7 +246,7 @@
 }
 
 .card__body {
-  color: var(--c-chrome-silver);
+  color: var(--surface-text);
   font-size: var(--fs-sm);
 }
 
@@ -273,12 +295,15 @@
 .scroll-progress__bar {
   height: 100%;
   width: 0%;
-  background: var(--c-ice-blue);
+  background: var(--c-deep-blue-grey);
   transform-origin: left;
-  box-shadow: 0 0 12px rgba(169, 198, 218, 0.6);
+  box-shadow: 0 0 12px rgba(46, 58, 70, 0.35);
 }
 
-/* ---- Page transition overlay (diagonal wipe) ---- */
+/* ---- Page transition overlay (diagonal wipe) ----
+   Platinum White by default so the wipe reads as part of the same light,
+   airy world between pages; Vision (the one dark page) wipes with Charcoal
+   instead so arriving at or leaving the deep chapter doesn't flash light. */
 .transition-overlay {
   position: fixed;
   inset: 0;
@@ -289,10 +314,12 @@
 .transition-overlay__panel {
   position: absolute;
   inset: -10% -10%;
-  background: var(--c-charcoal);
+  background: var(--c-platinum-white);
   clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
   transform: skewX(-8deg);
 }
+
+body[data-page="vision"] .transition-overlay__panel { background: var(--c-charcoal); }
 
 /* ---- Forms ---- */
 .form-field {
@@ -307,7 +334,7 @@
   font-weight: 600;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: var(--c-chrome-silver);
+  color: var(--c-deep-blue-grey);
 }
 
 .form-field input,
@@ -315,9 +342,9 @@
 .form-field textarea {
   font: inherit;
   font-size: var(--fs-base);
-  color: var(--text-on-charcoal-strong);
-  background: rgba(243, 244, 246, 0.03);
-  border: 1px solid var(--border-on-dark);
+  color: var(--c-charcoal);
+  background: rgba(46, 58, 70, 0.03);
+  border: 1px solid var(--border-on-light);
   border-radius: 2px;
   padding: var(--sp-4);
   min-height: 44px;
@@ -349,9 +376,9 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-5);
-  border: 1px solid var(--c-ice-blue);
+  border: 1px solid var(--c-slate-blue);
   border-radius: 2px;
-  color: var(--c-ice-blue);
+  color: var(--c-deep-blue-grey);
   opacity: 0;
   transform: translateY(8px);
 }
@@ -367,16 +394,16 @@
   font-size: var(--fs-2xs);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: var(--c-steel-grey);
+  color: var(--surface-muted);
 }
 .chapter-marker__num {
-  color: var(--c-ice-blue);
+  color: var(--accent-label);
   font-family: var(--font-display);
 }
 .chapter-marker__bar {
   width: 28px;
   height: 1px;
-  background: var(--border-on-dark);
+  background: var(--surface-border);
   position: relative;
   overflow: hidden;
 }
@@ -385,7 +412,7 @@
   position: absolute;
   inset: 0;
   width: var(--chapter-progress, 16%);
-  background: var(--c-ice-blue);
+  background: var(--accent-label);
 }
 
 /* ---- Trust strip / meta list ---- */
@@ -393,8 +420,8 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--sp-6);
-  border-top: 1px solid var(--border-on-dark);
-  border-bottom: 1px solid var(--border-on-dark);
+  border-top: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--surface-border);
   padding-block: var(--sp-6);
 }
 
@@ -402,11 +429,11 @@
 .meta-list__value {
   font-family: var(--font-display);
   font-size: var(--fs-2xl);
-  color: var(--c-ice-blue);
+  color: var(--c-deep-blue-grey);
 }
 .meta-list__label {
   font-size: var(--fs-xs);
-  color: var(--c-steel-grey);
+  color: var(--surface-muted);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
 }

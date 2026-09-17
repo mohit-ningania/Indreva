@@ -68,7 +68,13 @@
 <div id="route-announcer" class="visually-hidden" role="status" aria-live="polite"></div>
 
 <canvas id="scene-canvas" aria-hidden="true"></canvas>
-<div id="scene-fallback" aria-hidden="true"></div>
+<div id="scene-fallback" aria-hidden="true">
+  <video class="flowy-bg__video" muted loop playsinline preload="none"></video>
+  <div class="flowy-bg__blob flowy-bg__blob--1"></div>
+  <div class="flowy-bg__blob flowy-bg__blob--2"></div>
+  <div class="flowy-bg__blob flowy-bg__blob--3"></div>
+  <div class="flowy-bg__blob flowy-bg__blob--4"></div>
+</div>
 <div class="linework" aria-hidden="true"></div>
 
 <div class="transition-overlay" aria-hidden="true"><div class="transition-overlay__panel"></div></div>
@@ -77,10 +83,10 @@
   <a href="index.html" class="wordmark" aria-label="Indreva Trade Group — home">
     <span class="wordmark__mark" aria-hidden="true">
       <svg viewBox="0 0 104 104" width="30" height="30">
-        <polygon points="13,10 32,8 26,18 7,20" fill="#A9C6DA"/>
-        <polygon points="11,27 21,25 14,96 4,98" fill="#B8BCC2"/>
-        <polygon points="37,19 53,19 65,92 49,92" fill="#B8BCC2"/>
-        <polygon points="99,19 83,19 65,92 81,92" fill="#8A929B"/>
+        <path d="M11.35,12.74 Q13,10 16.18,9.67 L28.82,8.33 Q32,8 30.35,10.74 L27.65,15.26 Q26,18 22.82,18.33 L10.18,19.67 Q7,20 8.65,17.26 Z" fill="currentColor"/>
+        <path d="M10.69,30.18 Q11,27 14.14,26.37 L17.86,25.63 Q21,25 20.69,28.18 L14.31,92.82 Q14,96 10.86,96.63 L7.14,97.37 Q4,98 4.31,94.82 Z" fill="currentColor"/>
+        <path d="M37.52,22.16 Q37,19 40.2,19.0 L49.8,19.0 Q53,19 53.52,22.16 L64.48,88.84 Q65,92 61.8,92.0 L52.2,92.0 Q49,92 48.48,88.84 Z" fill="currentColor"/>
+        <path d="M98.23,22.11 Q99,19 95.8,19.0 L86.2,19.0 Q83,19 82.23,22.11 L65.77,88.89 Q65,92 68.2,92.0 L77.8,92.0 Q81,92 81.77,88.89 Z" fill="currentColor" opacity="0.75"/>
       </svg>
     </span>
     <span class="wordmark__text">
@@ -121,7 +127,7 @@
   <section class="page-hero container">
     <div>
       <p class="chapter-marker" style="--chapter-progress:33%"><span class="chapter-marker__num">02/06</span><span class="chapter-marker__bar"></span>Chapter Two — The Origin</p>
-      <p class="eyebrow" data-reveal style="color:var(--c-ice-blue)">About Indreva</p>
+      <p class="eyebrow" data-reveal style="color:var(--accent-label)">About Indreva</p>
       <h1 class="page-hero__title" data-split-headline data-reveal>Built By Two Founders Who Wanted Trading Done Differently</h1>
     </div>
   </section>
@@ -133,14 +139,14 @@
 
       <div class="name-meaning" data-reveal>
         <p class="name-meaning__word">Indra + Eva</p>
-        <p>The name Indreva combines <strong style="color:var(--c-chrome-silver)">Indra</strong> — the King — with <strong style="color:var(--c-chrome-silver)">Eva</strong> — Always. Together: <em>Always the King.</em> A standard the company holds itself to in every consignment, not a claim it makes lightly.</p>
+        <p>The name Indreva combines <strong style="color:var(--c-charcoal)">Indra</strong> — the King — with <strong style="color:var(--c-charcoal)">Eva</strong> — Always. Together: <em>Always the King.</em> A standard the company holds itself to in every consignment, not a claim it makes lightly.</p>
       </div>
     </div>
   </section>
 
   <section class="chapter container" aria-labelledby="founders-heading">
     <div class="section-head">
-      <p class="eyebrow" data-reveal style="color:var(--c-ice-blue)">Leadership</p>
+      <p class="eyebrow" data-reveal style="color:var(--accent-label)">Leadership</p>
       <h2 id="founders-heading" data-reveal>Founder-Led, By Design</h2>
     </div>
     <div class="founders-grid">
@@ -200,7 +206,7 @@
     </nav>
     <div>
       <p style="color:var(--c-steel-grey); font-size:var(--fs-sm);">Palhawas, Rewari<br>Haryana, India</p>
-      <p style="margin-top:var(--sp-3);"><a href="mailto:info@indreva.in" style="color:var(--c-ice-blue);">info@indreva.in</a></p>
+      <p style="margin-top:var(--sp-3);"><a href="mailto:info@indreva.in" style="color:var(--accent-label);">info@indreva.in</a></p>
     </div>
   </div>
   <div class="footer-bottom">

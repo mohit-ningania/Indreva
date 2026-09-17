@@ -45,6 +45,19 @@ export function setGenericScrollSuspended(value) {
 function lerp(a, b, t) { return a + (b - a) * t; }
 function lerp3(a, b, t) { return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)]; }
 
+// Deep Blue-Grey (dark metal, the default on the site's light pages) vs
+// Chrome Silver (light chrome, reserved for the dark-background Vision page).
+const TONE_COLORS = { dark: 0x2e3a46, light: 0xb8bcc2 };
+// A bright chrome look needs a brighter env reflection to read as chrome;
+// the dark gunmetal tone needs a dimmer one or its own base colour washes
+// out to near-white (metalness ~0.7 means reflection dominates over base
+// colour). Each page's dimAtEnd (waypoints.js) is a fraction of this start.
+const TONE_ENV_START = { dark: 0.65, light: 1.3 };
+function applyMaterialTone(pageKey) {
+  const tone = getWaypoint(pageKey).materialTone || 'dark';
+  monogram.material.color.setHex(TONE_COLORS[tone]);
+}
+
 export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
   gsapRef = gsap;
   ScrollTriggerRef = ScrollTrigger;
@@ -128,12 +141,14 @@ function applyPageWaypoint(pageKey, t) {
   const scale = lerp(wp.monogram.scaleStart, wp.monogram.scaleEnd, t);
   applyDispersion(monogram.slabs, dispersion);
   monogram.group.scale.setScalar(scale);
-  monogram.material.envMapIntensity = lerp(1.3, wp.dimAtEnd, t);
+  const envStart = TONE_ENV_START[wp.materialTone || 'dark'];
+  monogram.material.envMapIntensity = lerp(envStart, wp.dimAtEnd, t);
 }
 
 /** Binds a scrubbed ScrollTrigger spanning the whole document for the active page. */
 function bindScrollTrigger(pageKey) {
   if (pageScrollTrigger) pageScrollTrigger.kill();
+  applyMaterialTone(pageKey); // page-level, not scroll-driven — set once per page, not per frame
   pageScrollTrigger = ScrollTriggerRef.create({
     trigger: document.body,
     start: 'top top',
@@ -172,6 +187,9 @@ export function travelTo(nextPageKey, duration = 0.6) {
     scale: toWp.monogram.scaleStart,
   };
 
+  const fromColor = monogram.material.color.clone();
+  const toColor = new THREE.Color(TONE_COLORS[toWp.materialTone || 'dark']);
+
   transitionState = { from, to };
   currentPageKey = nextPageKey;
 
@@ -189,6 +207,7 @@ export function travelTo(nextPageKey, duration = 0.6) {
         camera.lookAt(0, 0, 0);
         applyDispersion(monogram.slabs, lerp(from.dispersion, to.dispersion, proxy.t));
         monogram.group.scale.setScalar(lerp(from.scale, to.scale, proxy.t));
+        monogram.material.color.copy(fromColor).lerp(toColor, proxy.t);
       },
       onComplete: () => {
         transitionState = null;

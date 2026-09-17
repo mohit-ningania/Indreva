@@ -11,7 +11,7 @@ import { initCursor } from './core/cursor.js';
 import { initNav, initScrollProgress, markActiveLink } from './core/nav.js';
 import { initReveals, clearRevealTriggers } from './core/reveal.js';
 import { initTransitions } from './core/transitions.js';
-import { initFallback } from './three/fallback.js';
+import { initFallback, initFlowyVideo } from './three/fallback.js';
 
 import * as homePage from './pages/home.js';
 import * as aboutPage from './pages/about.js';
@@ -45,6 +45,12 @@ async function boot() {
   let sceneModule = null;
   const currentPage = () => document.body.dataset.page;
 
+  // The flowy blob background (#scene-fallback) is the site's permanent
+  // backdrop now, not just a no-WebGL substitute — it stays mounted either
+  // way. When the WebGL scene is available, its alpha canvas renders the
+  // dark monogram on top of these same blobs; when it isn't, initFallback()
+  // just drops the now-unused canvas element and lets the CSS blobs run on
+  // their own (no per-frame JS needed for them at all).
   if (canUseWebGLScene()) {
     try {
       sceneModule = await import('./three/scene.js');
@@ -53,7 +59,6 @@ async function boot() {
         canvas: document.getElementById('scene-canvas'),
         initialPage: currentPage(),
       });
-      document.getElementById('scene-fallback')?.remove();
     } catch (err) {
       sceneModule = null;
       initFallback();
@@ -61,6 +66,8 @@ async function boot() {
   } else {
     initFallback();
   }
+
+  initFlowyVideo(currentPage());
 
   const runPageInit = (pageKey) => {
     PAGE_MODULES[pageKey]?.init?.({ gsap, ScrollTrigger, scene: sceneModule, capabilities });
@@ -79,6 +86,7 @@ async function boot() {
       clearRevealTriggers(ScrollTrigger);
       initReveals(gsap, ScrollTrigger);
       markActiveLink();
+      initFlowyVideo(currentPage());
     },
     travelTo: sceneModule?.travelTo,
     refreshForPage: sceneModule?.refreshForPage,

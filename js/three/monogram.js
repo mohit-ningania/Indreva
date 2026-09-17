@@ -42,9 +42,49 @@ function localizeSlab(points) {
   return { local, worldPosition };
 }
 
-function polygonGeometry(localPoints, depth) {
+// Corner radius in brand-space units — matches the R=3.2 used to build the
+// flat SVG paths (assets/favicons/mark.svg), so the extruded slabs and the
+// flat logo read as the same rounded-corner shape at any scale.
+const CORNER_RADIUS = 3.2 * WORLD_SCALE;
+
+/**
+ * Same rounded-corner construction as the SVG paths: at each vertex, walk
+ * back `radius` along the incoming edge and forward `radius` along the
+ * outgoing edge, then join those two points with a quadratic curve whose
+ * control point is the original (sharp) vertex. Radius is clamped per
+ * corner so it never exceeds ~45% of either adjacent edge — the stem is
+ * narrow enough that an unclamped radius would self-intersect.
+ */
+function polygonGeometry(localPoints, depth, radius = CORNER_RADIUS) {
   const shape = new THREE.Shape();
-  localPoints.forEach(([x, y], i) => (i === 0 ? shape.moveTo(x, y) : shape.lineTo(x, y)));
+  const n = localPoints.length;
+
+  const cornerPoints = (i) => {
+    const prev = localPoints[(i - 1 + n) % n];
+    const cur = localPoints[i];
+    const next = localPoints[(i + 1) % n];
+    const d1x = cur[0] - prev[0], d1y = cur[1] - prev[1];
+    const len1 = Math.hypot(d1x, d1y);
+    const d2x = next[0] - cur[0], d2y = next[1] - cur[1];
+    const len2 = Math.hypot(d2x, d2y);
+    const r = Math.min(radius, len1 * 0.45, len2 * 0.45);
+    return {
+      cur,
+      p1: [cur[0] - (d1x / len1) * r, cur[1] - (d1y / len1) * r],
+      p2: [cur[0] + (d2x / len2) * r, cur[1] + (d2y / len2) * r],
+    };
+  };
+
+  const first = cornerPoints(0);
+  shape.moveTo(first.p1[0], first.p1[1]);
+  for (let i = 0; i < n; i++) {
+    const c = cornerPoints(i);
+    shape.quadraticCurveTo(c.cur[0], c.cur[1], c.p2[0], c.p2[1]);
+    if (i < n - 1) {
+      const next = cornerPoints(i + 1);
+      shape.lineTo(next.p1[0], next.p1[1]);
+    }
+  }
   shape.closePath();
 
   const geo = new THREE.ExtrudeGeometry(shape, {
@@ -53,7 +93,7 @@ function polygonGeometry(localPoints, depth) {
     bevelThickness: 0.015,
     bevelSize: 0.015,
     bevelSegments: 2,
-    curveSegments: 1,
+    curveSegments: 6,
   });
   geo.center(); // centers Z (depth); X/Y are already centered by localizeSlab
   return geo;
@@ -82,16 +122,22 @@ const DISPERSAL = {
 function buildEnvironment(renderer) {
   // Procedural gradient "studio" environment (no external HDR fetch) so the
   // brushed-metal material still gets soft reflections/highlights to read
-  // as machined metal rather than a flat-shaded block.
+  // as machined metal rather than a flat-shaded block. Kept mostly dark/
+  // mid-tone on purpose: at metalness ~0.8 the environment reflection
+  // dominates the material's apparent brightness far more than its base
+  // colour does, so a bright chrome-style env map would wash the dark
+  // Deep Blue-Grey tone out to near-white — this stays dark with only a
+  // narrow bright band and a narrow ice-blue band for a gunmetal read.
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   const grad = ctx.createLinearGradient(0, 0, 0, size);
-  grad.addColorStop(0, '#3a4956');
-  grad.addColorStop(0.45, '#b8bcc2');
-  grad.addColorStop(0.62, '#a9c6da');
+  grad.addColorStop(0, '#1c2126');
+  grad.addColorStop(0.4, '#2e3a46');
+  grad.addColorStop(0.58, '#8a929b');
+  grad.addColorStop(0.68, '#a9c6da');
   grad.addColorStop(1, '#1c2126');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, size, size);
@@ -114,11 +160,11 @@ export function createMonogram(renderer) {
   const envMap = buildEnvironment(renderer);
 
   const material = new THREE.MeshStandardMaterial({
-    color: 0xb8bcc2,       // Chrome Silver base
-    metalness: 0.88,
-    roughness: 0.32,
+    color: 0x2e3a46,       // Deep Blue-Grey — dark metal, the default on the site's light pages
+    metalness: 0.7,        // lower than a mirror-chrome look so the dark base colour stays dominant
+    roughness: 0.46,       // more matte — keeps specular highlights soft instead of blowing out bright
     envMap,
-    envMapIntensity: 1.1,
+    envMapIntensity: 0.65,
   });
 
   const slabs = SLAB_DEFS.map((def) => {

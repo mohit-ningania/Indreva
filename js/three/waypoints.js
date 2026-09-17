@@ -29,6 +29,13 @@
  *     toward by the end of the page — used to push the geometry back into
  *     ambient depth on the content-heavy middle pages.
  *
+ *   materialTone
+ *     'dark' (Deep Blue-Grey) or 'light' (Chrome Silver) — the monogram's
+ *     material colour, set once per page (see scene.js applyMaterialTone).
+ *     Every page is light-background/dark-logo except Vision, the site's
+ *     one deep-dark chapter, which needs the light chrome tone to read
+ *     against its dark backdrop.
+ *
  * TRANSITION BETWEEN PAGES (see transitions.js + scene.js `travelTo`):
  * when navigating, the camera tweens from the CURRENT page's `camera.end`
  * to the NEXT page's `camera.start` over the transition duration, and
@@ -39,24 +46,27 @@
 
 export const WAYPOINTS = {
   home: {
+    materialTone: 'dark',
     camera: {
       start: { position: [0, 0.1, 6.2], rotation: [0, 0, 0], fov: 42 },
       end: { position: [0, -0.4, 2.4], rotation: [0, 0.12, 0], fov: 48 },
     },
     monogram: { dispersionStart: 0, dispersionEnd: 0.35, scaleStart: 1, scaleEnd: 1.2 },
     ambientRotationSpeed: 0.09,
-    dimAtEnd: 0.85,
+    dimAtEnd: 0.42,
   },
   about: {
+    materialTone: 'dark',
     camera: {
       start: { position: [-1.4, 0.3, 3.4], rotation: [0, -0.3, 0], fov: 46 },
       end: { position: [1.6, -0.2, 4.6], rotation: [0, 0.28, 0], fov: 46 },
     },
     monogram: { dispersionStart: 0.35, dispersionEnd: 0.6, scaleStart: 1.1, scaleEnd: 0.95 },
     ambientRotationSpeed: 0.05,
-    dimAtEnd: 0.55,
+    dimAtEnd: 0.28,
   },
   capabilities: {
+    materialTone: 'dark',
     camera: {
       start: { position: [1.8, 0.4, 5.2], rotation: [0, 0.25, 0], fov: 44 },
       end: { position: [-2.1, -0.6, 6.4], rotation: [0, -0.22, 0], fov: 44 },
@@ -64,18 +74,20 @@ export const WAYPOINTS = {
     // "loose formation suggesting motion/routes" — held mid-dispersion
     monogram: { dispersionStart: 0.6, dispersionEnd: 0.68, scaleStart: 0.9, scaleEnd: 0.85 },
     ambientRotationSpeed: 0.04,
-    dimAtEnd: 0.4,
+    dimAtEnd: 0.2,
   },
   'why-indreva': {
+    materialTone: 'dark',
     camera: {
       start: { position: [-1.6, -0.3, 6.8], rotation: [0, -0.18, 0], fov: 44 },
       end: { position: [1.2, 0.5, 8.2], rotation: [0, 0.15, 0], fov: 44 },
     },
     monogram: { dispersionStart: 0.68, dispersionEnd: 0.78, scaleStart: 0.82, scaleEnd: 0.72 },
     ambientRotationSpeed: 0.03,
-    dimAtEnd: 0.28,
+    dimAtEnd: 0.14,
   },
   vision: {
+    materialTone: 'light',
     // Deepest page: geometry recedes to ambient depth, then the horizontal
     // scroll-jacked growth section (vision.js) morphs dispersion across its
     // four stages independently of this page-level start/end pair.
@@ -88,6 +100,7 @@ export const WAYPOINTS = {
     dimAtEnd: 0.18,
   },
   contact: {
+    materialTone: 'dark',
     // Reassemble and lock into place.
     camera: {
       start: { position: [0, 0.3, 6.5], rotation: [0, 0, 0], fov: 44 },
@@ -95,7 +108,7 @@ export const WAYPOINTS = {
     },
     monogram: { dispersionStart: 0.9, dispersionEnd: 0, scaleStart: 1.0, scaleEnd: 1.15 },
     ambientRotationSpeed: 0.06,
-    dimAtEnd: 0.9,
+    dimAtEnd: 0.45,
   },
 };
 

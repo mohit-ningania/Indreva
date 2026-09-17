@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   padding-block: var(--sp-8);
-  border-bottom: 1px solid var(--border-on-dark);
+  border-bottom: 1px solid var(--border-on-light);
 }
 
 .cap-chapter__grid {
@@ -25,19 +25,19 @@
   font-size: clamp(4rem, 10vw, 9rem);
   line-height: 1;
   color: transparent;
-  -webkit-text-stroke: 1px var(--border-on-dark);
+  -webkit-text-stroke: 1px var(--border-on-light);
 }
 
-.cap-chapter__label { color: var(--c-ice-blue); margin-bottom: var(--sp-4); }
+.cap-chapter__label { color: var(--accent-label); margin-bottom: var(--sp-4); }
 .cap-chapter__title {
   font-size: clamp(1.75rem, 3.4vw, var(--fs-3xl));
-  color: var(--text-on-charcoal-strong);
+  color: var(--c-charcoal);
   max-width: 16ch;
 }
 .cap-chapter__body {
   margin-top: var(--sp-5);
   max-width: 40rem;
-  color: var(--c-chrome-silver);
+  color: var(--c-deep-blue-grey);
   font-size: var(--fs-md);
 }
 
@@ -51,7 +51,7 @@
   display: flex;
   gap: var(--sp-3);
   font-size: var(--fs-sm);
-  color: var(--c-steel-grey);
+  color: var(--c-slate-blue);
   padding-left: var(--sp-5);
   position: relative;
 }
@@ -60,7 +60,7 @@
   position: absolute;
   left: 0; top: 0.55em;
   width: 10px; height: 2px;
-  background: var(--c-ice-blue);
+  background: var(--c-deep-blue-grey);
   transform: skewX(-20deg);
 }
 

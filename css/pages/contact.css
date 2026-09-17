@@ -11,11 +11,11 @@
 .contact-info__item h3 {
   font-size: var(--fs-xs);
   letter-spacing: var(--track-label);
-  color: var(--c-ice-blue);
+  color: var(--c-slate-blue);
   margin-bottom: var(--sp-3);
 }
 .contact-info__item p,
-.contact-info__item a { color: var(--c-chrome-silver); font-size: var(--fs-md); }
+.contact-info__item a { color: var(--c-deep-blue-grey); font-size: var(--fs-md); }
 
 .contact-form { position: relative; }
 

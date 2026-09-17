@@ -14,7 +14,12 @@
   --c-charcoal: #1C2126;
   --c-ice-blue: #A9C6DA;
 
-  /* ---- Semantic tokens (pairing rules enforced here, not per-component) ---- */
+  /* ---- Semantic tokens (pairing rules enforced here, not per-component) ----
+     Default site surface is now light (Platinum White / flowy ice-blue-grey)
+     with dark logo/text, per brand direction. Charcoal stays reserved for
+     three deliberate dark zones: the footer, the mobile nav overlay, and
+     the Vision page (the brief's one "deep dark" chapter). Those zones use
+     the --*-on-dark tokens below directly instead of the default ones. */
   --bg-charcoal: var(--c-charcoal);
   --bg-deep: var(--c-deep-blue-grey);
   --bg-platinum: var(--c-platinum-white);
@@ -31,6 +36,27 @@
 
   --border-on-dark: rgba(184, 188, 194, 0.18);
   --border-on-light: rgba(46, 58, 70, 0.14);
+
+  /* ---- Default surface (the light theme) ---- */
+  --surface-bg: var(--c-platinum-white);
+  --surface-text: var(--c-charcoal);
+  --surface-text-strong: var(--c-deep-blue-grey);
+  /* Steel Grey on Platinum White is ~3:1 — fails WCAG AA for small text.
+     Slate Blue clears 4.5:1 there, so it's the muted tone on the light
+     surface; Steel Grey stays reserved for the dark surface (footer,
+     Vision), where it reads fine against Charcoal. */
+  --surface-muted: var(--c-slate-blue);
+  --surface-border: var(--border-on-light);
+  --surface-card-bg: rgba(46, 58, 70, 0.04);
+  /* Eyebrow/label accent: Slate Blue on the light default surface, Ice Blue
+     wherever a page opts back into the dark surface (see below). */
+  --accent-label: var(--c-slate-blue);
+
+  /* ---- Dark surface (footer, mobile nav overlay, Vision) ---- */
+  --surface-bg-dark: var(--c-charcoal);
+  --surface-text-dark: var(--c-chrome-silver);
+  --surface-text-dark-strong: var(--c-platinum-white);
+  --surface-border-dark: var(--border-on-dark);
 
   /* ---- Typography ---- */
   --font-display: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -77,6 +103,7 @@
   --dur-base: 420ms;
   --dur-slow: 640ms;
 
+  --z-canvas-bg: 0;
   --z-canvas: 1;
   --z-linework: 2;
   --z-content: 10;

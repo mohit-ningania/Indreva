@@ -14,14 +14,31 @@ html.no-js-scroll { scroll-behavior: smooth; }
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg-charcoal);
-  color: var(--text-on-charcoal);
+  /* The flowy-bg layer paints the actual visible background; this is just
+     the base colour showing through before/behind it (and for print/no-css-bg cases). */
+  background: var(--surface-bg);
+  color: var(--surface-text);
   font-family: var(--font-body);
   font-size: var(--fs-base);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+/* Vision is the site's one deep-dark chapter — flip the surface tokens for
+   its whole subtree so every component that reads them (cards, borders,
+   muted text) adapts without page-specific overrides scattered everywhere. */
+body[data-page="vision"] {
+  background: var(--surface-bg-dark);
+  color: var(--surface-text-dark);
+  --surface-bg: var(--surface-bg-dark);
+  --surface-text: var(--surface-text-dark);
+  --surface-text-strong: var(--surface-text-dark-strong);
+  --surface-muted: var(--c-steel-grey);
+  --surface-border: var(--surface-border-dark);
+  --surface-card-bg: rgba(184, 188, 194, 0.06);
+  --accent-label: var(--c-ice-blue);
 }
 
 /* Lenis applies transform to this wrapper; keep it a plain block */
