@@ -36,7 +36,7 @@ async function boot() {
   const ScrollTrigger = window.ScrollTrigger;
   gsap.registerPlugin(ScrollTrigger);
 
-  initCursor();
+  initCursor(gsap);
   initNav(gsap);
   initScrollProgress();
   await initSmoothScroll(gsap, ScrollTrigger);

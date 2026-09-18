@@ -255,30 +255,62 @@ body[data-page="vision"] #page-content .btn--accent:hover { background: #bcd6e6;
   clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
 }
 
-/* ---- Custom cursor (desktop only, injected by JS) ---- */
+/* ---- Custom cursor (desktop only, injected by JS) ----
+   A clean ring + fixed centre dot — deliberately NOT
+   mix-blend-mode:difference, which reads as a flickery, colour-shifting
+   artifact over photos/gradients rather than an intentional cursor, and
+   deliberately a plain circle rather than a clip-path polygon: clip-path
+   crops a CSS border's rendering too, so a "cut corner" shape here would
+   show gaps with no stroke along the cut edges instead of a clean outline.
+   gsap.set(x/y) in cursor.js positions this via translate3d, so only
+   scale/appearance are transitioned here. */
 .cursor {
   position: fixed;
   top: 0;
   left: 0;
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px; /* centers on the gsap-driven x/y point */
   pointer-events: none;
   z-index: var(--z-cursor);
-  transform: translate(-50%, -50%);
-  clip-path: polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
-  background: var(--c-chrome-silver);
-  mix-blend-mode: difference;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-deep-blue-grey);
+  background: transparent;
+  opacity: 1;
   transition: width var(--dur-fast) var(--ease-out-soft),
               height var(--dur-fast) var(--ease-out-soft),
-              background var(--dur-fast) var(--ease-out-soft);
-  will-change: transform;
+              margin var(--dur-fast) var(--ease-out-soft),
+              border-color var(--dur-fast) var(--ease-precision),
+              background var(--dur-fast) var(--ease-precision),
+              opacity var(--dur-fast) var(--ease-precision);
 }
 
-.cursor.is-active {
-  width: 34px;
-  height: 34px;
-  background: var(--c-ice-blue);
+/* Fixed centre dot for precision — visible in the resting ring state, and
+   hidden once the ring fills solid on hover so it doesn't double up. */
+.cursor::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 4px; height: 4px;
+  background: var(--c-deep-blue-grey);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--dur-fast) var(--ease-precision);
 }
+
+body[data-page="vision"] .cursor { border-color: var(--c-ice-blue); }
+body[data-page="vision"] .cursor::after { background: var(--c-ice-blue); }
+
+.cursor.is-active {
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-color: var(--c-ice-blue);
+  background: rgba(169, 198, 218, 0.16);
+}
+.cursor.is-active::after { opacity: 0; }
+
+.cursor.is-pressed { width: 20px; height: 20px; margin: -10px 0 0 -10px; }
 
 .cursor.is-hidden { opacity: 0; }
 
@@ -442,7 +474,10 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
   .meta-list { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 720px) {
+/* 960px, not 720px: the wordmark + 5 nav links + CTA need real room to
+   breathe. Below that they wrap and the CTA gets clipped off-screen at
+   common tablet widths (e.g. 768px) — switch to the hamburger earlier. */
+@media (max-width: 960px) {
   .nav-links, .primary-nav .btn--accent.header-cta { display: none; }
   .nav-toggle { display: flex; }
 }
