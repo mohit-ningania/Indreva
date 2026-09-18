@@ -112,11 +112,21 @@ const SLAB_DEFS = BRAND_SLABS.map((def) => {
   return { ...def, local, position: worldPosition };
 });
 
+// Every slab drifts up and to the right, deeper into the screen — a single
+// coherent "opening up toward the horizon" motion (matching the site's
+// growth narrative) instead of fragments scattering to random quadrants.
+// Previously flag/stem carried a strongly *negative* x (-1.8/-2.6): combined
+// with the group's own +1.3 world-space bias toward the right (see scene.js,
+// keeping clear space for left-aligned headlines), that dragged them back
+// past screen-centre and into the text column at higher dispersion — exactly
+// where About/Why Indreva's copy lives. Every dir here now keeps the slab's
+// world x comfortably positive (see monogram.js worldPosition math) at
+// dispersion 1, so no fragment ever drifts left of centre.
 const DISPERSAL = {
-  flag: { dir: [-1.8, 3.1, 0.8], rot: [0.7, -0.6, 0.3] },
-  stem: { dir: [-2.6, 1.8, -1.4], rot: [0.4, 0.9, 0.2] },
-  'stroke-left': { dir: [1.1, 2.2, 1.6], rot: [-0.5, 0.4, -0.3] },
-  'stroke-right': { dir: [2.8, 1.6, -1.1], rot: [0.3, -0.7, 0.5] },
+  flag: { dir: [0.4, 2.2, -1.8], rot: [0.35, -0.3, 0.15] },
+  stem: { dir: [-0.3, -1.2, -2.2], rot: [0.2, 0.4, 0.1] },
+  'stroke-left': { dir: [1.4, 1.6, 1.8], rot: [-0.25, 0.2, -0.15] },
+  'stroke-right': { dir: [2.2, -1.2, 1.4], rot: [0.15, -0.35, 0.25] },
 };
 
 function buildEnvironment(renderer) {
@@ -192,6 +202,11 @@ export function createMonogram(renderer) {
  * cheap linear interpolation per slab, no easing here (the caller already
  * eased the scalar via ScrollTrigger scrub / GSAP tween).
  */
+// Fragments shrink slightly as they scatter — reads as receding into depth
+// rather than fixed-size debris just floating apart, a small touch that
+// makes the break-apart feel more deliberate/cinematic.
+const DISPERSED_SCALE_FLOOR = 0.72;
+
 export function applyDispersion(slabs, dispersion) {
   slabs.forEach((mesh) => {
     const [px, py, pz] = mesh.userData.assembledPosition;
@@ -201,5 +216,6 @@ export function applyDispersion(slabs, dispersion) {
 
     mesh.position.set(px + dx * dispersion, py + dy * dispersion, pz + dz * dispersion);
     mesh.rotation.set(arx + rx * dispersion, ary + ry * dispersion, arz + rz * dispersion);
+    mesh.scale.setScalar(1 - (1 - DISPERSED_SCALE_FLOOR) * dispersion);
   });
 }

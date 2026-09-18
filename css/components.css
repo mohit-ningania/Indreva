@@ -16,8 +16,8 @@
 .site-footer .wordmark { color: var(--surface-text-dark-strong); }
 
 .wordmark__mark {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
 }
 
@@ -65,34 +65,50 @@
   margin-top: 0;
 }
 
-/* ---- Primary nav ---- */
-.primary-nav { display: flex; align-items: center; gap: var(--sp-7); }
+/* ---- Primary nav ----
+   Each link gets a soft glass "capsule" that grows in behind it on hover —
+   a translucent, fully-rounded pill rather than a flat underline, to match
+   the cylindrical/pill language used across the header chrome (see the CTA
+   buttons below). */
+.primary-nav { display: flex; align-items: center; gap: var(--sp-5); }
 
-.nav-links { display: flex; align-items: center; gap: var(--sp-6); }
+.nav-links { display: flex; align-items: center; gap: var(--sp-1); }
 
 .nav-links a {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-body);
   font-size: var(--fs-xs);
   font-weight: 500;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--c-charcoal);
-  padding-block: var(--sp-1);
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: 999px;
+  z-index: 0;
 }
 
-.nav-links a::after {
+.nav-links a::before {
   content: '';
   position: absolute;
-  left: 0; right: 100%;
-  bottom: -2px;
-  height: 1px;
-  background: var(--c-deep-blue-grey);
-  transition: right var(--dur-base) var(--ease-precision);
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(46, 58, 70, 0.07);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity var(--dur-fast) var(--ease-precision),
+              transform var(--dur-fast) var(--ease-out-soft);
+  z-index: -1;
 }
 
-.nav-links a:hover::after,
-.nav-links a[aria-current="page"]::after { right: 0; }
+.nav-links a:hover::before,
+.nav-links a[aria-current="page"]::before {
+  opacity: 1;
+  transform: scale(1);
+}
 
 .nav-links a[aria-current="page"] { color: var(--c-deep-blue-grey); }
 
@@ -137,6 +153,14 @@ body[data-page="vision"] #page-content .btn--accent {
 }
 .nav-overlay .btn--accent:hover,
 body[data-page="vision"] #page-content .btn--accent:hover { background: #bcd6e6; }
+
+/* The header's own CTA picks up the nav's cylindrical/pill language rather
+   than the sharp corners used on in-page CTAs elsewhere. */
+.header-cta,
+.nav-overlay__cta {
+  border-radius: 999px;
+  padding-inline: var(--sp-6);
+}
 
 .btn--ghost {
   background: transparent;

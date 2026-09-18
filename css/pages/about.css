@@ -22,6 +22,9 @@
   flex-direction: column;
   gap: var(--sp-5);
 }
+/* A light halo, same idea as .page-hero__title above — keeps the copy
+   readable on the rare pass where a dispersed 3D fragment crosses behind it. */
+.story-block > p { text-shadow: 0 2px 14px rgba(243, 244, 246, 0.9), 0 1px 2px rgba(243, 244, 246, 0.95); }
 
 .name-meaning {
   margin-top: var(--sp-8);

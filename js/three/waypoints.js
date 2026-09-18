@@ -48,10 +48,12 @@ export const WAYPOINTS = {
   home: {
     materialTone: 'dark',
     camera: {
-      start: { position: [0, 0.1, 6.2], rotation: [0, 0, 0], fov: 42 },
-      end: { position: [0, -0.4, 2.4], rotation: [0, 0.12, 0], fov: 48 },
+      start: { position: [0, 0.1, 5.2], rotation: [0, 0, 0], fov: 42 },
+      end: { position: [0, -0.4, 2.2], rotation: [0, 0.12, 0], fov: 48 },
     },
-    monogram: { dispersionStart: 0, dispersionEnd: 0.35, scaleStart: 1, scaleEnd: 1.2 },
+    // Bigger on load (1.35 vs. the old 1) — the mark was reading small
+    // against how much clear space sits around it in the hero.
+    monogram: { dispersionStart: 0, dispersionEnd: 0.35, scaleStart: 1.35, scaleEnd: 1.6 },
     ambientRotationSpeed: 0.09,
     dimAtEnd: 0.42,
   },
