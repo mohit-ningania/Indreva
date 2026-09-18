@@ -25,7 +25,6 @@ export function initFlowyVideo(pageKey) {
   if (capabilities.reducedMotion || capabilities.saveData) return;
 
   const tone = pageKey === 'vision' ? 'vision' : 'light';
-  const src = `assets/video/flow-${tone}.mp4`;
   const poster = `assets/video/flow-${tone}-poster.jpg`;
 
   if (video.dataset.tone === tone) return; // already pointed at the right clip
@@ -40,11 +39,19 @@ export function initFlowyVideo(pageKey) {
   posterProbe.onload = () => video.classList.add('is-ready');
   posterProbe.src = poster;
 
+  // WebM/VP9 first: smaller at the same quality, and the only format some
+  // Chromium-based builds without licensed H.264 support can decode at all.
+  // The browser picks the first <source> it can actually play, so the MP4
+  // fallback still covers Safari and any VP9-less engine.
   video.innerHTML = '';
-  const source = document.createElement('source');
-  source.src = src;
-  source.type = 'video/mp4';
-  video.appendChild(source);
+  const sourceWebm = document.createElement('source');
+  sourceWebm.src = `assets/video/flow-${tone}.webm`;
+  sourceWebm.type = 'video/webm';
+  video.appendChild(sourceWebm);
+  const sourceMp4 = document.createElement('source');
+  sourceMp4.src = `assets/video/flow-${tone}.mp4`;
+  sourceMp4.type = 'video/mp4';
+  video.appendChild(sourceMp4);
   video.load();
   video.addEventListener('loadeddata', () => video.classList.add('is-ready'), { once: true });
   video.play().catch(() => {}); // autoplay can be blocked; blobs remain the visible background either way

@@ -1,10 +1,8 @@
 /**
- * Custom geometric cursor. Desktop / fine-pointer only — never instantiated
- * on touch devices. Uses gsap.quickTo for frame-rate-independent following
- * (buttery on 60Hz and 120Hz+ displays alike, unlike a hand-rolled per-frame
- * lerp), and a deliberate solid colour instead of mix-blend-mode:difference
- * — difference mode reads as a glitchy colour-shifting artifact over the
- * site's photos/gradients rather than an intentional cursor.
+ * Custom chrome-arrow cursor image. Desktop / fine-pointer only — never
+ * instantiated on touch devices. Uses gsap.quickTo for frame-rate-independent
+ * following (buttery on 60Hz and 120Hz+ displays alike, unlike a hand-rolled
+ * per-frame lerp).
  */
 import { capabilities } from './device.js';
 
@@ -16,6 +14,11 @@ export function initCursor(gsap) {
   const el = document.createElement('div');
   el.className = 'cursor';
   el.setAttribute('aria-hidden', 'true');
+  const img = document.createElement('img');
+  img.className = 'cursor__img';
+  img.src = 'assets/cursor/cursor-chrome.png';
+  img.alt = '';
+  el.appendChild(img);
   document.body.appendChild(el);
 
   const startX = window.innerWidth / 2;

@@ -14,10 +14,10 @@ import * as THREE from '../vendor/three.module.min.js';
 // Edit these points to reshape the mark — keep favicon/wordmark SVGs in sync.
 const MARK_SPACE = 104;
 const BRAND_SLABS = [
-  { key: 'flag', points: [[13, 10], [32, 8], [26, 18], [7, 20]] },
-  { key: 'stem', points: [[11, 27], [21, 25], [14, 96], [4, 98]] },
-  { key: 'stroke-left', points: [[37, 19], [53, 19], [65, 92], [49, 92]] },
-  { key: 'stroke-right', points: [[99, 19], [83, 19], [65, 92], [81, 92]] },
+  { key: 'flag', points: [[41.8, 30.5], [56.1, 30.5], [52.5, 35.3], [38.4, 35.3]] },
+  { key: 'stem', points: [[37.5, 37.9], [54.1, 37.9], [28.3, 73.6], [11.7, 73.6]] },
+  { key: 'stroke-left', points: [[55.1, 37.9], [75.0, 37.9], [52.5, 73.6], [51.2, 73.6]] },
+  { key: 'stroke-right', points: [[77.3, 37.9], [92.7, 37.9], [70.5, 73.6], [53.8, 73.6]] },
 ];
 
 /** World-space scale for the whole mark; MARK_SPACE units map to this many Three.js units tall. */
@@ -42,10 +42,10 @@ function localizeSlab(points) {
   return { local, worldPosition };
 }
 
-// Corner radius in brand-space units — matches the R=3.2 used to build the
+// Corner radius in brand-space units — matches the R=2.4 used to build the
 // flat SVG paths (assets/favicons/mark.svg), so the extruded slabs and the
 // flat logo read as the same rounded-corner shape at any scale.
-const CORNER_RADIUS = 3.2 * WORLD_SCALE;
+const CORNER_RADIUS = 2.4 * WORLD_SCALE;
 
 /**
  * Same rounded-corner construction as the SVG paths: at each vertex, walk
