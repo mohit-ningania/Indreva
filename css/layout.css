@@ -150,9 +150,14 @@ main {
 }
 
 /* ---- Header ----
-   Always light/translucent — the site's chrome stays constant even on the
-   dark Vision page, where it reads as a calm fixed frame around the one
-   deep chapter rather than blending into it. */
+   At rest, the header has no panel of its own — its backdrop is a soft
+   gradient (::before) that fades into the flowy background/video underneath
+   rather than a flat translucent bar with a hard bottom edge, so the page
+   reads as one continuous immersive surface instead of a chrome strip sitting
+   on top of it. Once scrolled (.is-condensed) it solidifies into a normal
+   blurred nav bar for legibility over passing content. Always light/
+   translucent even on the dark Vision page, where it reads as a calm fixed
+   frame around the one deep chapter rather than blending into it. */
 .site-header {
   position: fixed;
   top: 0;
@@ -163,20 +168,30 @@ main {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-5) var(--container-pad);
-  background: rgba(243, 244, 246, 0.55);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  border-bottom: 1px solid transparent;
   color: var(--c-charcoal);
-  transition: padding var(--dur-base) var(--ease-precision),
-              background var(--dur-base) var(--ease-precision),
-              border-color var(--dur-base) var(--ease-precision);
+  transition: padding var(--dur-base) var(--ease-precision);
+}
+
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -56px 0; /* extends the fade well past the header's own box so it never ends in a visible line */
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(243, 244, 246, 0.75) 0%, rgba(243, 244, 246, 0.4) 45%, rgba(243, 244, 246, 0) 100%);
+  transition: background var(--dur-base) var(--ease-precision), inset var(--dur-base) var(--ease-precision);
 }
 
 .site-header.is-condensed {
   padding-block: var(--sp-3);
+}
+
+.site-header.is-condensed::before {
+  inset: 0;
   background: rgba(243, 244, 246, 0.88);
-  border-bottom-color: var(--border-on-light);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--border-on-light);
 }
 
 .site-footer {

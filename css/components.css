@@ -8,7 +8,7 @@
    light-on-dark pairing back on since it stays a fixed dark zone. */
 .wordmark {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center; /* baseline put the SVG icon's own bottom edge on the text baseline, floating it visibly above the wordmark instead of centering on it */
   gap: var(--sp-3);
   color: var(--c-charcoal);
 }

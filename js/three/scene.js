@@ -226,9 +226,12 @@ function renderLoop() {
 
   // Ambient rotation: independent of scroll, always running, scaled per
   // waypoint so it recedes on content-dense pages instead of distracting.
+  // Y-axis only, deliberately — the mark is a thin extruded slab (SLAB_DEPTH
+  // 0.34 against a ~2.35 unit face), so tumbling it on X *and* Y used to spin
+  // it edge-on to the camera at intervals, reading as an uncontrolled wobble
+  // rather than a clean turntable rotation.
   const wp = getWaypoint(currentPageKey);
   monogram.group.rotation.y += wp.ambientRotationSpeed * delta;
-  monogram.group.rotation.x += wp.ambientRotationSpeed * 0.4 * delta;
 
   renderer.render(scene, camera);
 }
