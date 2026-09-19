@@ -116,17 +116,24 @@ const SLAB_DEFS = BRAND_SLABS.map((def) => {
 // coherent "opening up toward the horizon" motion (matching the site's
 // growth narrative) instead of fragments scattering to random quadrants.
 // Previously flag/stem carried a strongly *negative* x (-1.8/-2.6): combined
-// with the group's own +1.3 world-space bias toward the right (see scene.js,
-// keeping clear space for left-aligned headlines), that dragged them back
-// past screen-centre and into the text column at higher dispersion — exactly
-// where About/Why Indreva's copy lives. Every dir here now keeps the slab's
+// with the group's own rightward world-space bias (see scene.js, keeping
+// clear space for left-aligned headlines), that dragged them back past
+// screen-centre and into the text column at higher dispersion — exactly
+// where About/Why Indreva's copy lives. Every dir here keeps the slab's
 // world x comfortably positive (see monogram.js worldPosition math) at
-// dispersion 1, so no fragment ever drifts left of centre.
+// full dispersion, so no fragment ever drifts left of centre.
+//
+// Kept deliberately modest in magnitude: dispersion now runs on a sine arc
+// peaking mid-page on *every* page (see scene.js applyPageWaypoint), not
+// just a one-time scatter, and stroke-left/stroke-right already sit close
+// to the group's own rightward bias at rest — a wide swing here pushed them
+// past the right edge of the frame entirely (NDC x > 1) during that arc,
+// which read as "the logo disappearing" rather than breaking apart.
 const DISPERSAL = {
-  flag: { dir: [0.4, 2.2, -1.8], rot: [0.35, -0.3, 0.15] },
-  stem: { dir: [-0.3, -1.2, -2.2], rot: [0.2, 0.4, 0.1] },
-  'stroke-left': { dir: [1.4, 1.6, 1.8], rot: [-0.25, 0.2, -0.15] },
-  'stroke-right': { dir: [2.2, -1.2, 1.4], rot: [0.15, -0.35, 0.25] },
+  flag: { dir: [0.15, 0.9, -0.75], rot: [0.35, -0.3, 0.15] },
+  stem: { dir: [-0.12, -0.5, -0.9], rot: [0.2, 0.4, 0.1] },
+  'stroke-left': { dir: [0.55, 0.65, 0.75], rot: [-0.25, 0.2, -0.15] },
+  'stroke-right': { dir: [0.85, -0.5, 0.6], rot: [0.15, -0.35, 0.25] },
 };
 
 function buildEnvironment(renderer) {
