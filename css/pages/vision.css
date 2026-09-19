@@ -22,20 +22,29 @@
   text-shadow: 0 2px 16px rgba(28, 33, 38, 0.7);
 }
 
+/* .horizon is the tall scroll-distance container — vision.js sets its
+   height to 100svh + however many px the track needs to translate across,
+   so scrolling through that extra height is what drives the horizontal
+   motion below. */
 .horizon {
   margin-top: -10svh;
+  position: relative;
 }
 
 /* ---- Horizontal scroll-jacked growth path ----
-   .horizon-track holds four .horizon-stage panels side by side; a pinned
-   wrapper (.horizon-pin) is translated on the X axis by GSAP as the user
-   scrolls through its extended vertical scroll-height. See vision.js. */
+   .horizon-track holds four .horizon-stage panels side by side.
+   .horizon-pin uses native CSS position:sticky (not a JS/ScrollTrigger-
+   computed fixed position) to stay pinned to the viewport while its tall
+   .horizon parent scrolls past — sticky is plain browser layout, so it
+   can't be thrown off by any quirk in how a given embedding context
+   reports scroll/resize state. See vision.js for the track's translate. */
 .horizon-pin {
+  position: sticky;
+  top: 0;
   height: 100svh;
   overflow: hidden;
   display: flex;
   align-items: center;
-  position: relative;
 }
 
 .horizon-track {
@@ -98,7 +107,7 @@
 }
 
 @media (max-width: 720px) {
-  .horizon-pin { height: auto; }
+  .horizon-pin { position: static; height: auto; }
   .horizon-track { flex-direction: column; }
   .horizon-stage { flex: 0 0 auto; min-height: 70svh; }
 }
@@ -106,7 +115,7 @@
 /* Horizontal scroll-jacking is a strong vestibular trigger — stack the
    growth-path stages as a plain vertical flow instead when requested. */
 @media (prefers-reduced-motion: reduce) {
-  .horizon-pin { height: auto !important; }
+  .horizon-pin { position: static !important; height: auto !important; }
   .horizon-track { flex-direction: column; transform: none !important; }
   .horizon-stage { flex: 0 0 auto; min-height: auto; padding-block: var(--sp-8); }
   .horizon-progress { display: none; }

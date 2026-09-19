@@ -81,7 +81,9 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
 
   const built = createMonogram(renderer);
   monogram = built;
-  built.group.position.x = 1.3; // biases the mark toward the right so left-aligned headlines keep clear space
+  // Biases the mark toward the right so left-aligned headlines keep clear
+  // space, with enough margin that it doesn't crowd the right edge either.
+  built.group.position.x = 1.75;
   scrollRig.add(built.group);
 
   // Lighting: deep blue-grey fill (ambient/hemi) + a cool key light for the
@@ -122,7 +124,19 @@ function onResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-/** Sets camera + monogram to the waypoint's interpolated state at fraction t (0..1) of the given page. */
+/**
+ * Sets camera + monogram to the waypoint's interpolated state at fraction t
+ * (0..1) of the given page.
+ *
+ * The mark reads "assembled -> break apart -> reassembled" across every
+ * page's own scroll, not a one-way scatter: dispersion follows a sine arc
+ * (0 at t=0 and t=1, peaking at wp.monogram.peakDispersion around t=0.5)
+ * instead of a straight lerp between two endpoints. groupY sinks the whole
+ * mark down in world space as t -> 1, so by the time the page has scrolled
+ * to its footer the reassembled mark is settled half behind the footer's
+ * opaque background — the canvas itself never clips it; the footer's own
+ * z-index (above the canvas, see layout.css) does that naturally.
+ */
 function applyPageWaypoint(pageKey, t) {
   const wp = getWaypoint(pageKey);
   const cam = wp.camera;
@@ -137,10 +151,11 @@ function applyPageWaypoint(pageKey, t) {
   camera.updateProjectionMatrix();
   camera.lookAt(0, 0, 0);
 
-  const dispersion = lerp(wp.monogram.dispersionStart, wp.monogram.dispersionEnd, t);
+  const dispersion = Math.sin(Math.min(Math.max(t, 0), 1) * Math.PI) * wp.monogram.peakDispersion;
   const scale = lerp(wp.monogram.scaleStart, wp.monogram.scaleEnd, t);
   applyDispersion(monogram.slabs, dispersion);
   monogram.group.scale.setScalar(scale);
+  monogram.group.position.y = lerp(wp.groupY.start, wp.groupY.end, t);
   const envStart = TONE_ENV_START[wp.materialTone || 'dark'];
   monogram.material.envMapIntensity = lerp(envStart, wp.dimAtEnd, t);
 }
@@ -176,15 +191,19 @@ export function travelTo(nextPageKey, duration = 0.6) {
     pos: [...camera.position.toArray()],
     rot: [camera.rotation.x, camera.rotation.y, camera.rotation.z],
     fov: camera.fov,
-    dispersion: fromWp.monogram.dispersionEnd,
+    // Every page's own dispersion arc returns to 0 at both ends (see
+    // applyPageWaypoint) — the mark is always assembled at a page boundary.
+    dispersion: 0,
     scale: monogram.group.scale.x,
+    groupY: fromWp.groupY.end,
   };
   const to = {
     pos: toWp.camera.start.position,
     rot: toWp.camera.start.rotation,
     fov: toWp.camera.start.fov,
-    dispersion: toWp.monogram.dispersionStart,
+    dispersion: 0,
     scale: toWp.monogram.scaleStart,
+    groupY: toWp.groupY.start,
   };
 
   const fromColor = monogram.material.color.clone();
@@ -207,6 +226,7 @@ export function travelTo(nextPageKey, duration = 0.6) {
         camera.lookAt(0, 0, 0);
         applyDispersion(monogram.slabs, lerp(from.dispersion, to.dispersion, proxy.t));
         monogram.group.scale.setScalar(lerp(from.scale, to.scale, proxy.t));
+        monogram.group.position.y = lerp(from.groupY, to.groupY, proxy.t);
         monogram.material.color.copy(fromColor).lerp(toColor, proxy.t);
       },
       onComplete: () => {
@@ -258,46 +278,68 @@ export function refreshForPage(pageKey) {
 
 /**
  * Binds the Vision page's horizontal scroll-jacked growth path (Sourcing ->
- * Distribution -> Manufacturing -> International Trade). Pins `container`,
- * translates `track` across its four full-viewport stages, and morphs the
- * monogram's dispersion/camera-z/rig-rotation across VISION_STAGES in the
- * same scrub — one ScrollTrigger driving both the DOM and the 3D layer.
- * Suspends the generic per-page trigger for the duration so they don't
- * fight over camera.position.z.
+ * Distribution -> Manufacturing -> International Trade).
+ *
+ * Deliberately NOT built on GSAP ScrollTrigger's `pin` — that relies on
+ * ScrollTrigger computing and injecting its own spacer/position-fixed math
+ * from window scroll state, which turned out to silently break inside the
+ * Claude Artifact preview's embedding (stages 2-4 never appeared there,
+ * despite this working in every direct-browser and Playwright test). This
+ * version uses native CSS `position: sticky` for the pin (vision.css
+ * `.horizon-pin`) — the browser's own layout engine keeps it correct
+ * regardless of any embedding quirk — and drives the horizontal translate
+ * + 3D morph from a plain `scroll` listener reading `wrapper`'s
+ * getBoundingClientRect() each frame, with no ScrollTrigger involvement at
+ * all. `wrapper` is `.horizon` (the tall scroll-distance container);
+ * `track` is `.horizon-track` (the flex row of stage panels) sitting inside
+ * the sticky `.horizon-pin`.
  */
-export function bindVisionHorizontal(container, track, onStageChange) {
+export function bindVisionHorizontal(wrapper, track, onStageChange) {
   setGenericScrollSuspended(true);
 
-  const distance = () => Math.max(track.scrollWidth - window.innerWidth, 0);
+  let extra = 0;
+  const recalc = () => {
+    extra = Math.max(track.scrollWidth - window.innerWidth, 0);
+    wrapper.style.height = `calc(100svh + ${extra}px)`;
+  };
+  recalc();
+  window.addEventListener('resize', recalc);
 
-  const trigger = ScrollTriggerRef.create({
-    trigger: container,
-    start: 'top top',
-    end: () => '+=' + distance(),
-    scrub: 1,
-    pin: true,
-    invalidateOnRefresh: true,
-    onUpdate: (self) => {
-      gsapRef.set(track, { x: -self.progress * distance() });
+  let queued = false;
+  const update = () => {
+    queued = false;
+    const rect = wrapper.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    const progress = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
 
-      const steps = VISION_STAGES.length - 1;
-      const scaled = self.progress * steps;
-      const idx = Math.min(Math.floor(scaled), steps - 1);
-      const localT = scaled - idx;
-      const a = VISION_STAGES[idx];
-      const b = VISION_STAGES[idx + 1] || a;
+    gsapRef.set(track, { x: -progress * extra });
 
-      applyDispersion(monogram.slabs, lerp(a.dispersion, b.dispersion, localT));
-      camera.position.z = lerp(a.cameraZ, b.cameraZ, localT);
-      scrollRig.rotation.y = lerp(a.rotationY, b.rotationY, localT);
-      camera.updateProjectionMatrix();
+    const steps = VISION_STAGES.length - 1;
+    const scaled = progress * steps;
+    const idx = Math.min(Math.floor(scaled), steps - 1);
+    const localT = scaled - idx;
+    const a = VISION_STAGES[idx];
+    const b = VISION_STAGES[idx + 1] || a;
 
-      onStageChange?.(Math.round(scaled));
-    },
-  });
+    applyDispersion(monogram.slabs, lerp(a.dispersion, b.dispersion, localT));
+    camera.position.z = lerp(a.cameraZ, b.cameraZ, localT);
+    scrollRig.rotation.y = lerp(a.rotationY, b.rotationY, localT);
+    camera.updateProjectionMatrix();
+
+    onStageChange?.(Math.round(scaled));
+  };
+  const onScroll = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  update();
 
   return () => {
-    trigger.kill();
+    window.removeEventListener('resize', recalc);
+    window.removeEventListener('scroll', onScroll);
+    wrapper.style.height = '';
     setGenericScrollSuspended(false);
     scrollRig.rotation.y = 0;
   };
