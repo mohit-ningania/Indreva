@@ -20,17 +20,14 @@
   pointer-events: none;
 }
 
-/* Hard-clip the 3D layer to a lane on the right edge — see --stage-reserve
-   in variables.css. This is a deterministic crop, not a positioning
-   heuristic: whatever the scroll-driven camera/dispersion math does, the
-   mark can never be visible outside this lane, so it can never render over
-   text. Text-bearing grids reserve the same width as padding (see
-   components.css .founders-grid etc.) so the lane itself stays empty. */
-@media (min-width: 1024px) {
-  #scene-canvas {
-    clip-path: inset(0 0 0 calc(100% - var(--stage-reserve)));
-  }
-}
+/* No clip-path here on purpose: cropping the canvas cut fragments off
+   mid-shape whenever the scroll-driven motion carried them near the
+   boundary, which read as the logo itself being broken rather than staying
+   clear of text. The mark stays out of text instead by *positioning* — see
+   scene.js/waypoints.js — with text-bearing grids giving it room via
+   padding (--stage-reserve, variables.css; components.css .founders-grid
+   etc.), never by clipping what's actually rendered.
+*/
 
 /* ---- Flowy ambient background ----
    The site's actual visible backdrop: a slow-drifting soft gradient of
