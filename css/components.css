@@ -301,10 +301,10 @@ body[data-page="vision"] #page-content .btn--accent:hover { background: #bcd6e6;
 
 .cursor__img {
   position: absolute;
-  left: -2px;
-  top: -1px;
-  width: 26px;
-  height: 35px;
+  left: -1.4px;
+  top: -0.7px;
+  width: 18px;
+  height: 24px;
   max-width: none; /* .cursor is intentionally 0x0 (see above) — the global img{max-width:100%} reset would otherwise clamp this to zero */
   filter: drop-shadow(0 2px 6px rgba(28, 33, 38, 0.35));
   transform-origin: 8% 4%; /* the arrow's own tip, so scaling never drifts off the pointer */
@@ -475,6 +475,10 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
 
 @media (max-width: 860px) {
   .meta-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .meta-list { padding-right: var(--stage-reserve); }
 }
 
 /* 960px, not 720px: the wordmark + 5 nav links + CTA need real room to

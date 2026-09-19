@@ -43,6 +43,10 @@
 .name-meaning strong { color: var(--c-charcoal); }
 
 .founders-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-6); }
+/* Keeps the (wide, 2-column) grid clear of the 3D mark's reserved lane — see --stage-reserve. */
+@media (min-width: 1024px) {
+  .founders-grid { padding-right: var(--stage-reserve); }
+}
 
 .founder-card {
   padding: var(--sp-7);
@@ -78,6 +82,9 @@
   grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-6);
   margin-top: var(--sp-7);
+}
+@media (min-width: 1024px) {
+  .journey-steps { padding-right: var(--stage-reserve); }
 }
 .journey-step {
   padding-top: var(--sp-5);

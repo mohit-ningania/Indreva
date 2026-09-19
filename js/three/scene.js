@@ -30,6 +30,27 @@ let rafId = null;
 let isVisible = true;
 let gsapRef, ScrollTriggerRef;
 
+/**
+ * Current dispersion amount (0..1), kept in sync by every call site that
+ * calls applyDispersion (applyPageWaypoint, travelTo, bindVisionHorizontal).
+ * The render loop uses it to scale idle ambient rotation — see ambientPhase
+ * below for why.
+ */
+let currentDispersion = 0;
+
+/**
+ * Ambient idle rotation is phase * currentDispersion, not a raw accumulator
+ * (see renderLoop). ambientPhase itself still accumulates every frame
+ * regardless of page/scroll state — cheap, and it's only ever *read* scaled
+ * by dispersion — but the rotation actually applied to the mark is always
+ * exactly 0 the instant dispersion returns to 0. Without this, the mark
+ * would reassemble at the footer (or on Contact) at whatever rotation angle
+ * the idle spin happened to have accumulated to by then — visibly crooked,
+ * unpredictably, depending purely on how long the visitor had been on the
+ * page before scrolling down.
+ */
+let ambientPhase = 0;
+
 /** transitionState !== null while travelTo() is running; the per-page
  *  ScrollTrigger callback yields to it so the two never fight the camera. */
 let transitionState = null;
@@ -81,9 +102,11 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
 
   const built = createMonogram(renderer);
   monogram = built;
-  // Biases the mark toward the right so left-aligned headlines keep clear
-  // space, with enough margin that it doesn't crowd the right edge either.
-  built.group.position.x = 1.75;
+  // Biases the mark toward the right so it lands inside the CSS-clipped
+  // stage lane (see #scene-canvas's clip-path, layout.css) that keeps the
+  // canvas from ever rendering over text — this is what that lane's
+  // horizontal position is tuned against, not just a compositional choice.
+  built.group.position.x = 2.4;
   scrollRig.add(built.group);
 
   // Lighting: deep blue-grey fill (ambient/hemi) + a cool key light for the
@@ -154,6 +177,7 @@ function applyPageWaypoint(pageKey, t) {
   const dispersion = Math.sin(Math.min(Math.max(t, 0), 1) * Math.PI) * wp.monogram.peakDispersion;
   const scale = lerp(wp.monogram.scaleStart, wp.monogram.scaleEnd, t);
   applyDispersion(monogram.slabs, dispersion);
+  currentDispersion = dispersion;
   monogram.group.scale.setScalar(scale);
   monogram.group.position.y = lerp(wp.groupY.start, wp.groupY.end, t);
   const envStart = TONE_ENV_START[wp.materialTone || 'dark'];
@@ -224,7 +248,9 @@ export function travelTo(nextPageKey, duration = 0.6) {
         camera.fov = lerp(from.fov, to.fov, proxy.t);
         camera.updateProjectionMatrix();
         camera.lookAt(0, 0, 0);
-        applyDispersion(monogram.slabs, lerp(from.dispersion, to.dispersion, proxy.t));
+        const dispersion = lerp(from.dispersion, to.dispersion, proxy.t);
+        applyDispersion(monogram.slabs, dispersion);
+        currentDispersion = dispersion;
         monogram.group.scale.setScalar(lerp(from.scale, to.scale, proxy.t));
         monogram.group.position.y = lerp(from.groupY, to.groupY, proxy.t);
         monogram.material.color.copy(fromColor).lerp(toColor, proxy.t);
@@ -244,14 +270,21 @@ function renderLoop() {
 
   const delta = clock.getDelta();
 
-  // Ambient rotation: independent of scroll, always running, scaled per
-  // waypoint so it recedes on content-dense pages instead of distracting.
-  // Y-axis only, deliberately — the mark is a thin extruded slab (SLAB_DEPTH
-  // 0.34 against a ~2.35 unit face), so tumbling it on X *and* Y used to spin
-  // it edge-on to the camera at intervals, reading as an uncontrolled wobble
-  // rather than a clean turntable rotation.
+  // Ambient rotation: Y-axis only, deliberately — the mark is a thin
+  // extruded slab (SLAB_DEPTH 0.34 against a ~2.35 unit face), so tumbling
+  // it on X *and* Y used to spin it edge-on to the camera at intervals,
+  // reading as an uncontrolled wobble rather than a clean turntable
+  // rotation. ambientPhase accumulates unconditionally (cheap), but the
+  // rotation actually applied is that phase scaled by currentDispersion —
+  // so it's a lively spin while the mark is scattered, and exactly 0 the
+  // instant it reassembles, regardless of how much phase built up getting
+  // there. Without the scaling, the mark would reassemble at the footer (or
+  // on Contact) sitting at whatever angle idle rotation had drifted to,
+  // which looked visibly crooked and varied with how long the visitor had
+  // been on the page.
   const wp = getWaypoint(currentPageKey);
-  monogram.group.rotation.y += wp.ambientRotationSpeed * delta;
+  ambientPhase += wp.ambientRotationSpeed * delta;
+  monogram.group.rotation.y = ambientPhase * currentDispersion;
 
   renderer.render(scene, camera);
 }
@@ -321,7 +354,9 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
     const a = VISION_STAGES[idx];
     const b = VISION_STAGES[idx + 1] || a;
 
-    applyDispersion(monogram.slabs, lerp(a.dispersion, b.dispersion, localT));
+    const dispersion = lerp(a.dispersion, b.dispersion, localT);
+    applyDispersion(monogram.slabs, dispersion);
+    currentDispersion = dispersion;
     camera.position.z = lerp(a.cameraZ, b.cameraZ, localT);
     scrollRig.rotation.y = lerp(a.rotationY, b.rotationY, localT);
     camera.updateProjectionMatrix();

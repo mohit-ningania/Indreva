@@ -112,28 +112,18 @@ const SLAB_DEFS = BRAND_SLABS.map((def) => {
   return { ...def, local, position: worldPosition };
 });
 
-// Every slab drifts up and to the right, deeper into the screen — a single
-// coherent "opening up toward the horizon" motion (matching the site's
-// growth narrative) instead of fragments scattering to random quadrants.
-// Previously flag/stem carried a strongly *negative* x (-1.8/-2.6): combined
-// with the group's own rightward world-space bias (see scene.js, keeping
-// clear space for left-aligned headlines), that dragged them back past
-// screen-centre and into the text column at higher dispersion — exactly
-// where About/Why Indreva's copy lives. Every dir here keeps the slab's
-// world x comfortably positive (see monogram.js worldPosition math) at
-// full dispersion, so no fragment ever drifts left of centre.
-//
-// Kept deliberately modest in magnitude: dispersion now runs on a sine arc
-// peaking mid-page on *every* page (see scene.js applyPageWaypoint), not
-// just a one-time scatter, and stroke-left/stroke-right already sit close
-// to the group's own rightward bias at rest — a wide swing here pushed them
-// past the right edge of the frame entirely (NDC x > 1) during that arc,
-// which read as "the logo disappearing" rather than breaking apart.
+// Every slab drifts up/down and into depth for a big, dramatic break-apart —
+// but deliberately barely at all sideways (X). The canvas itself is now
+// hard-clipped to a lane on the right edge (see #scene-canvas's clip-path,
+// layout.css) so the mark can never render over text regardless of what
+// this does; X motion is kept small purely so the formation doesn't drift
+// out of that visible lane; Y/Z carry all the drama instead, which is where
+// it reads best anyway (depth and vertical separation, not sideways drift).
 const DISPERSAL = {
-  flag: { dir: [0.15, 0.9, -0.75], rot: [0.35, -0.3, 0.15] },
-  stem: { dir: [-0.12, -0.5, -0.9], rot: [0.2, 0.4, 0.1] },
-  'stroke-left': { dir: [0.55, 0.65, 0.75], rot: [-0.25, 0.2, -0.15] },
-  'stroke-right': { dir: [0.85, -0.5, 0.6], rot: [0.15, -0.35, 0.25] },
+  flag: { dir: [0.25, 2.6, -2.4], rot: [0.5, -0.4, 0.2] },
+  stem: { dir: [0.2, -2.4, -2.8], rot: [0.3, 0.55, 0.15] },
+  'stroke-left': { dir: [0.6, 2.2, 2.4], rot: [-0.35, 0.3, -0.2] },
+  'stroke-right': { dir: [0.75, -2.2, 2.0], rot: [0.2, -0.5, 0.35] },
 };
 
 function buildEnvironment(renderer) {

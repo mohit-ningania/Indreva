@@ -7,18 +7,24 @@
   border-bottom: 1px solid var(--border-on-light);
 }
 
+/* Text always in the wide left track, the decorative index number always in
+   the narrow right one — previously alternated per section ("loose
+   formation suggesting motion/routes"), but that put text on the right for
+   half the sections, which is exactly where the 3D mark's reserved lane
+   lives (see --stage-reserve). Consistency here beats the alternating
+   layout now that the mark must never render under text. */
 .cap-chapter__grid {
   display: grid;
-  grid-template-columns: 0.6fr 1fr;
+  grid-template-columns: 1fr 0.6fr;
   gap: var(--sp-8);
   align-items: center;
   width: 100%;
 }
+.cap-chapter__index { order: 2; }
 
-.cap-chapter:nth-of-type(even) .cap-chapter__grid {
-  grid-template-columns: 1fr 0.6fr;
+@media (min-width: 1024px) {
+  .cap-chapter__grid { padding-right: var(--stage-reserve); }
 }
-.cap-chapter:nth-of-type(even) .cap-chapter__index { order: 2; }
 
 .cap-chapter__index {
   font-family: var(--font-display);
@@ -66,11 +72,10 @@
 }
 
 @media (max-width: 900px) {
-  .cap-chapter__grid,
-  .cap-chapter:nth-of-type(even) .cap-chapter__grid {
+  .cap-chapter__grid {
     grid-template-columns: 1fr;
     gap: var(--sp-5);
   }
-  .cap-chapter:nth-of-type(even) .cap-chapter__index { order: 0; }
+  .cap-chapter__index { order: 0; }
   .cap-chapter { min-height: auto; padding-block: var(--sp-7); }
 }
