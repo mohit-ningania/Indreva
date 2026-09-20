@@ -129,11 +129,15 @@ const SLAB_DEFS = BRAND_SLABS.map((def) => {
 // column during the break-apart, which is what "spans the whole screen"
 // means in practice, not a symmetric spread around an already-right-biased
 // centre.
+// Rotation and depth (y/z) magnitudes bumped up further — per feedback the
+// break-apart read as too tame — for a more emphatic, tumbling scatter; x
+// (screen-width reach) is untouched since that's independently tuned for
+// edge safety per page.
 const DISPERSAL = {
-  flag: { dir: [1.6, 1.4, -1.2], rot: [0.5, -0.4, 0.2] },
-  stem: { dir: [-4.0, -1.3, -1.4], rot: [0.3, 0.55, 0.15] },
-  'stroke-left': { dir: [1.4, 1.1, 1.2], rot: [-0.35, 0.3, -0.2] },
-  'stroke-right': { dir: [-3.6, -1.1, 1.0], rot: [0.2, -0.5, 0.35] },
+  flag: { dir: [1.6, 1.8, -1.6], rot: [0.85, -0.7, 0.35] },
+  stem: { dir: [-4.0, -1.7, -1.8], rot: [0.5, 0.95, 0.25] },
+  'stroke-left': { dir: [1.4, 1.4, 1.6], rot: [-0.6, 0.5, -0.35] },
+  'stroke-right': { dir: [-3.6, -1.4, 1.3], rot: [0.35, -0.85, 0.6] },
 };
 
 function buildEnvironment(renderer) {
@@ -209,10 +213,10 @@ export function createMonogram(renderer) {
  * cheap linear interpolation per slab, no easing here (the caller already
  * eased the scalar via ScrollTrigger scrub / GSAP tween).
  */
-// Fragments shrink slightly as they scatter — reads as receding into depth
-// rather than fixed-size debris just floating apart, a small touch that
-// makes the break-apart feel more deliberate/cinematic.
-const DISPERSED_SCALE_FLOOR = 0.72;
+// Fragments shrink as they scatter — reads as receding into depth rather
+// than fixed-size debris just floating apart. Lowered further (was 0.72) as
+// part of making the whole break-apart more emphatic.
+const DISPERSED_SCALE_FLOOR = 0.56;
 
 // scaleCompensation counters the outer group's own scale (see scene.js —
 // several pages shrink the assembled mark to clear their hero text) so the
