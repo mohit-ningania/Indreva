@@ -16,8 +16,12 @@
 .site-footer .wordmark { color: var(--surface-text-dark-strong); }
 
 .wordmark__mark {
-  width: 40px;
-  height: 40px;
+  /* SVG viewBox is cropped tight to the glyph's own bounds (see each page's
+     header markup) rather than the icon's full 0..104 square coordinate
+     space, which was mostly empty margin — that whitespace made the mark
+     read as small next to "INDREVA" even though the box itself was 40px. */
+  width: 58px;
+  height: 36px;
   flex-shrink: 0;
 }
 
@@ -110,10 +114,14 @@
 .nav-links a[aria-current="page"] { color: var(--c-deep-blue-grey); }
 
 /* ---- Buttons ----
-   Flat, solid-fill pills — the only thing that moves on hover is the
-   button itself (a small lift with a soft shadow beneath it) and its
-   arrow. No overlays, no gradients on the fill itself. */
+   Solid-fill pills. The fill itself stays flat and solid at rest — a
+   previous version's permanent gradient sheen washed the colour out and
+   read as a dated glossy bevel. On hover only, a thin highlight along the
+   top third suggests the pill's own rounded, cylindrical cross-section
+   catching light — not a plastic coating over the whole surface. */
 .btn {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-3);
@@ -134,11 +142,25 @@
   min-height: 44px;
 }
 
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 60%);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out-soft);
+  pointer-events: none;
+}
+.btn--ghost::before, .btn--ghost-on-dark::before { display: none; } /* no fill for the highlight to sit on */
+
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 20px -12px rgba(28, 33, 38, 0.35);
 }
+.btn:hover::before { opacity: 1; }
 .btn:active { transform: translateY(0); box-shadow: none; }
+.btn:active::before { opacity: 0; }
 
 /* Default CTA is tuned for the site's light surface (Deep Blue-Grey fill —
    pops against the flowy background better than a light Ice Blue fill

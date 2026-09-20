@@ -140,12 +140,22 @@ export const WAYPOINTS = {
     // four stages independently of this page-level start/end pair — this
     // page's own generic ScrollTrigger stays suspended for as long as that
     // section owns the camera (see scene.js setGenericScrollSuspended).
+    // end matches VISION_STAGES' own final stage (cameraZ 3.0, rotationY
+    // 0.15) — scene.js hands the camera back to this page-level waypoint
+    // right around the moment the horizontal section's own scroll ends, so
+    // matching its last framing here keeps that handoff from snapping.
     camera: {
       start: { position: [0, 0.2, 9.5], rotation: [0, 0, 0], fov: 40 },
-      end: { position: [0, -0.3, 5.5], rotation: [0, 0, 0], fov: 46 },
+      end: { position: [0, -0.3, 3.0], rotation: [0, 0.15, 0], fov: 46 },
     },
-    monogram: { peakDispersion: 0.3, scaleStart: 0.7, scaleEnd: 1.0 },
+    // scaleStart/groupX.start clear the hero title (three stacked lines
+    // spanning most of the frame). scaleEnd is much smaller than a typical
+    // page's, and groupX.end pulls back toward centre, because camera.end
+    // above sits at z=3 — far closer than other pages' ~4.5 — so the same
+    // scale/offset that reads fine elsewhere would blow up oversized here.
+    monogram: { peakDispersion: 0.3, scaleStart: 0.63, scaleEnd: 0.4 },
     groupY: { start: 0, end: 0 },
+    groupX: { start: 2.2, end: 0.7 },
     ambientRotationSpeed: 0.02,
     dimAtEnd: 0.5,
   },

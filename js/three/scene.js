@@ -388,7 +388,30 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
     queued = false;
     const rect = wrapper.getBoundingClientRect();
     const total = rect.height - window.innerHeight;
-    const progress = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
+    const rawProgress = total > 0 ? -rect.top / total : 0;
+
+    // Scrolled fully past the last stage, or not yet reached the first one:
+    // hand the camera back to the generic per-page ScrollTrigger instead of
+    // leaving it frozen at the horizontal system's own last-applied framing.
+    // Checked against the *unclamped* progress (not the viewport-relative
+    // wrapper rect) because this page's remaining content after the pinned
+    // section is shorter than one viewport height — the sticky wrapper's own
+    // bottom edge never actually clears the viewport, even at the page's
+    // true max scroll, so waiting on that would never hand off at all.
+    // Without this, scrolling past this section left the camera stuck at its
+    // closest, most zoomed-in stage for the rest of the page — including
+    // this page's own closing content — which is why that content and the
+    // mark's reassembly there used to render wildly oversized.
+    if (rawProgress >= 1 || rawProgress <= 0) {
+      if (genericScrollSuspended) {
+        setGenericScrollSuspended(false);
+        if (pageScrollTrigger) applyPageWaypoint(currentPageKey, pageScrollTrigger.progress);
+      }
+      return;
+    }
+    if (!genericScrollSuspended) setGenericScrollSuspended(true);
+
+    const progress = Math.min(1, Math.max(0, rawProgress));
 
     gsapRef.set(track, { x: -progress * extra });
 
