@@ -76,8 +76,12 @@ export const WAYPOINTS = {
   },
   about: {
     materialTone: 'dark',
+    // start.position.z pulled back from 3.4 to 4.5 to match every other
+    // page's starting distance — that close, combined with this page's own
+    // off-axis start angle, was enough on its own to push the assembled
+    // mark's right edge past the viewport before any scroll or dispersion.
     camera: {
-      start: { position: [-1.4, 0.3, 3.4], rotation: [0, -0.3, 0], fov: 46 },
+      start: { position: [-1.4, 0.3, 4.5], rotation: [0, -0.3, 0], fov: 46 },
       end: { position: [0, -0.3, 4.5], rotation: [0, 0, 0], fov: 44 },
     },
     monogram: { peakDispersion: 0.55, scaleStart: 1.1, scaleEnd: 1.05 },

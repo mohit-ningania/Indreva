@@ -112,20 +112,20 @@ const SLAB_DEFS = BRAND_SLABS.map((def) => {
   return { ...def, local, position: worldPosition };
 });
 
-// A big, organic break-apart on all three axes — the mark isn't confined to
-// a clipped lane (see layout.css's #scene-canvas comment: cropping the
-// canvas cut fragments off mid-shape, which read as the logo breaking
-// rather than just staying clear of text), so there's room for real
-// sideways motion again, not just depth/vertical. It stays out of text by
-// where the *whole formation* sits (scene.js's per-page groupX/camera
-// framing, tuned against each page's actual text layout) and by every
-// slab here still drifting further right/positive rather than back toward
-// centre — flowing past its resting position, never doubling back over it.
+// A big, organic break-apart on all three axes. The x components are kept
+// small and roughly balanced (not all four slabs drifting the same way) on
+// purpose: the whole mark already sits off to the right of frame (see
+// scene.js's group.position.x), so any further net rightward drift at full
+// scatter compounds with that bias and pushes fragments straight past the
+// right edge of the viewport — invisible, reading as the logo getting cut
+// off rather than breaking apart. Vertical/depth motion (y/z) carries the
+// "big, organic" feel instead; x only needs enough spread to read as
+// dimensional, not to travel.
 const DISPERSAL = {
-  flag: { dir: [1.1, 2.8, -2.4], rot: [0.5, -0.4, 0.2] },
-  stem: { dir: [0.8, -2.6, -2.8], rot: [0.3, 0.55, 0.15] },
-  'stroke-left': { dir: [1.4, 2.3, 2.4], rot: [-0.35, 0.3, -0.2] },
-  'stroke-right': { dir: [1.7, -2.3, 2.0], rot: [0.2, -0.5, 0.35] },
+  flag: { dir: [0.16, 1.4, -1.2], rot: [0.5, -0.4, 0.2] },
+  stem: { dir: [-0.32, -1.3, -1.4], rot: [0.3, 0.55, 0.15] },
+  'stroke-left': { dir: [0.27, 1.1, 1.2], rot: [-0.35, 0.3, -0.2] },
+  'stroke-right': { dir: [0.32, -1.1, 1.0], rot: [0.2, -0.5, 0.35] },
 };
 
 function buildEnvironment(renderer) {

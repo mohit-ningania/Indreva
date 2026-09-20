@@ -66,10 +66,8 @@
 }
 
 /* ---- Primary nav ----
-   Each link gets a lit-glass capsule that grows in behind it on hover: a
-   vertical sheen (bright top, fading to nothing by mid-height) reads as
-   light wrapping a cylinder, and a diagonal shimmer sweeps across it once
-   per hover like a highlight catching the curve as it turns. */
+   A plain translucent pill fades in behind the label on hover — no
+   gradient, no sheen, just a quiet capsule and a 1px lift. */
 .primary-nav { display: flex; align-items: center; gap: var(--sp-5); }
 
 .nav-links { display: flex; align-items: center; gap: var(--sp-1); }
@@ -87,7 +85,7 @@
   padding: var(--sp-3) var(--sp-5);
   border-radius: 999px;
   z-index: 0;
-  transition: transform var(--dur-base) var(--ease-out-soft), color var(--dur-fast) var(--ease-precision);
+  transition: color var(--dur-fast) var(--ease-precision);
 }
 
 .nav-links a::before {
@@ -95,31 +93,12 @@
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0) 68%),
-    rgba(46, 58, 70, 0.08);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.55), inset 0 -4px 6px rgba(46, 58, 70, 0.07);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(46, 58, 70, 0.07);
   opacity: 0;
-  transform: scale(0.85);
+  transform: scale(0.9);
   transition: opacity var(--dur-fast) var(--ease-precision),
-              transform var(--dur-base) var(--ease-out-soft);
+              transform var(--dur-fast) var(--ease-out-soft);
   z-index: -1;
-}
-
-.nav-links a::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%);
-  background-size: 240% 100%;
-  background-position: -150% 0;
-  opacity: 0;
-  pointer-events: none;
-  z-index: -1;
-  transition: background-position var(--dur-slow) var(--ease-out-soft), opacity var(--dur-fast) linear;
 }
 
 .nav-links a:hover::before,
@@ -128,20 +107,13 @@
   transform: scale(1);
 }
 
-.nav-links a:hover::after { opacity: 1; background-position: 150% 0; }
-.nav-links a:hover { transform: translateY(-1px); }
-
 .nav-links a[aria-current="page"] { color: var(--c-deep-blue-grey); }
 
 /* ---- Buttons ----
-   Every CTA is the same lit-glass capsule as the nav pills above: a
-   permanent (if faint) vertical sheen gives it a cylindrical, always-on
-   glassy read; hovering lifts it toward the light with a soft shadow and
-   runs the same shimmer sweep across the curve. */
+   Flat, solid-fill pills — the only thing that moves on hover is the
+   button itself (a small lift with a soft shadow beneath it) and its
+   arrow. No overlays, no gradients on the fill itself. */
 .btn {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-3);
@@ -162,41 +134,11 @@
   min-height: 44px;
 }
 
-.btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0) 68%);
-  opacity: 0.75;
-  pointer-events: none;
-  z-index: 1;
-  transition: opacity var(--dur-base) var(--ease-precision);
-}
-
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.55) 50%, transparent 62%);
-  background-size: 240% 100%;
-  background-position: -150% 0;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 1;
-  transition: background-position var(--dur-slow) var(--ease-out-soft), opacity var(--dur-fast) linear;
-}
-
-.btn > * { position: relative; z-index: 2; }
-
 .btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 30px -14px rgba(28, 33, 38, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -12px rgba(28, 33, 38, 0.35);
 }
-.btn:hover::before { opacity: 1; }
-.btn:hover::after { opacity: 1; background-position: 150% 0; }
-.btn:active { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); box-shadow: none; }
 
 /* Default CTA is tuned for the site's light surface (Deep Blue-Grey fill —
    pops against the flowy background better than a light Ice Blue fill
@@ -221,7 +163,7 @@ body[data-page="vision"] #page-content .btn--accent:hover { background: #bcd6e6;
    (a dark drop shadow disappears against a dark background). */
 .nav-overlay .btn:hover,
 body[data-page="vision"] #page-content .btn:hover {
-  box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.55), 0 0 22px rgba(169, 198, 218, 0.3);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.5), 0 0 14px rgba(169, 198, 218, 0.22);
 }
 
 .btn--ghost {

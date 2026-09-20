@@ -105,8 +105,12 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
   // Biases the mark toward the right of the frame — paired with each page's
   // own monogram.scaleStart/scaleEnd/peakDispersion and camera framing (see
   // waypoints.js) so it reads as a flowing compositional element rather
-  // than sitting dead-center over the reading column.
-  built.group.position.x = 2.4;
+  // than sitting dead-center over the reading column. Kept modest on
+  // purpose: at full scatter (see monogram.js DISPERSAL) some slabs' own
+  // local x-offset adds on top of this, and a bigger bias here was pushing
+  // the total past the right edge of the viewport at ordinary window
+  // widths — invisible, reading as the logo getting cut off.
+  built.group.position.x = 0.7;
   scrollRig.add(built.group);
 
   // Lighting: deep blue-grey fill (ambient/hemi) + a cool key light for the
