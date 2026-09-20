@@ -477,10 +477,6 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
   .meta-list { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (min-width: 1024px) {
-  .meta-list { padding-right: var(--stage-reserve); }
-}
-
 /* 960px, not 720px: the wordmark + 5 nav links + CTA need real room to
    breathe. Below that they wrap and the CTA gets clipped off-screen at
    common tablet widths (e.g. 768px) — switch to the hamburger earlier. */

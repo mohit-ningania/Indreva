@@ -4,9 +4,6 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-8);
 }
-@media (min-width: 1024px) {
-  .positioning { padding-right: var(--stage-reserve); }
-}
 .positioning__col p {
   color: var(--c-deep-blue-grey);
   font-size: var(--fs-md);
@@ -42,9 +39,6 @@
 }
 
 .values-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-5); }
-@media (min-width: 1024px) {
-  .values-grid { padding-right: var(--stage-reserve); }
-}
 .value-col {
   padding-top: var(--sp-5);
   border-top: 1px solid var(--border-on-light);

@@ -23,11 +23,9 @@
 /* No clip-path here on purpose: cropping the canvas cut fragments off
    mid-shape whenever the scroll-driven motion carried them near the
    boundary, which read as the logo itself being broken rather than staying
-   clear of text. The mark stays out of text instead by *positioning* — see
-   scene.js/waypoints.js — with text-bearing grids giving it room via
-   padding (--stage-reserve, variables.css; components.css .founders-grid
-   etc.), never by clipping what's actually rendered.
-*/
+   clear of text. The mark stays out of text purely by *positioning*
+   (scene.js/waypoints.js's per-page camera/groupX framing and dispersal
+   directions) — page layout is untouched. */
 
 /* ---- Flowy ambient background ----
    The site's actual visible backdrop: a slow-drifting soft gradient of

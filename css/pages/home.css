@@ -55,9 +55,6 @@
 }
 
 .preview-grid { margin-top: var(--sp-7); }
-@media (min-width: 1024px) {
-  .preview-grid { padding-right: var(--stage-reserve); }
-}
 
 .preview-card {
   display: flex;

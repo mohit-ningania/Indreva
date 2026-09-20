@@ -95,15 +95,6 @@
   --container-max: 1440px;
   --container-pad: clamp(1.25rem, 4vw, 4rem);
 
-  /* The 3D monogram's canvas is hard-clipped to this width on the right
-     edge (see layout.css #scene-canvas) so it can never render over text —
-     not a positioning heuristic, an actual crop. Multi-column grids that
-     would otherwise span into that zone reserve the same width as extra
-     right padding (see components.css/pages/*.css). Only applied >=1024px;
-     below that, grids already stack to one column and the mark isn't
-     confined (see the same breakpoint in each file). */
-  --stage-reserve: clamp(260px, 30vw, 420px);
-
   /* ---- Motion ---- */
   --ease-precision: cubic-bezier(0.65, 0, 0.15, 1);
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
