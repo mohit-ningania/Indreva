@@ -151,13 +151,16 @@ export const WAYPOINTS = {
       end: { position: [0, -0.3, 3.0], rotation: [0, 0.15, 0], fov: 46 },
     },
     // scaleStart/groupX.start clear the hero title (three stacked lines
-    // spanning most of the frame). scaleEnd is much smaller than a typical
-    // page's, and groupX.end pulls back toward centre, because camera.end
-    // above sits at z=3 — far closer than other pages' ~4.5 — so the same
-    // scale/offset that reads fine elsewhere would blow up oversized here.
-    monogram: { peakDispersion: 0.3, scaleStart: 0.63, scaleEnd: 0.4 },
+    // spanning most of the frame) — bumped up from an earlier 0.63/2.2 per
+    // feedback the mark read too small against that title. scaleEnd is much
+    // smaller than a typical page's, and groupX.end pulls back toward
+    // centre, because camera.end above sits at z=3 — far closer than other
+    // pages' ~4.5 — so the same scale/offset that reads fine elsewhere
+    // would blow up oversized here; scaleEnd trimmed slightly further
+    // (0.4 -> 0.36) to hold that close-up framing on-screen at 1024px too.
+    monogram: { peakDispersion: 0.3, scaleStart: 0.9, scaleEnd: 0.36 },
     groupY: { start: 0, end: 0 },
-    groupX: { start: 2.2, end: 0.7 },
+    groupX: { start: 2.6, end: 0.7 },
     ambientRotationSpeed: 0.02,
     dimAtEnd: 0.5,
   },
