@@ -104,7 +104,7 @@ export const WAYPOINTS = {
     // Founders..." hero title at t=0/t=1, measured against actual glyphs.
     monogram: { peakDispersion: 0.55, scaleStart: 0.55, scaleEnd: 0.525 },
     groupY: { start: 0, end: -0.4 },
-    groupX: { start: 1.8, end: 1.8 },
+    groupX: { start: 1.4, end: 1.4 },
     ambientRotationSpeed: 0.05,
     dimAtEnd: 0.55,
   },

@@ -112,20 +112,28 @@ const SLAB_DEFS = BRAND_SLABS.map((def) => {
   return { ...def, local, position: worldPosition };
 });
 
-// A big, organic break-apart on all three axes. The x components are kept
-// small and roughly balanced (not all four slabs drifting the same way) on
-// purpose: the whole mark already sits off to the right of frame (see
-// scene.js's group.position.x), so any further net rightward drift at full
-// scatter compounds with that bias and pushes fragments straight past the
-// right edge of the viewport — invisible, reading as the logo getting cut
-// off rather than breaking apart. Vertical/depth motion (y/z) carries the
-// "big, organic" feel instead; x only needs enough spread to read as
-// dimensional, not to travel.
+// A big, organic break-apart on all three axes. Two fragments drift hard
+// left, two drift hard right, so at full scatter the mark reads as spread
+// across the whole viewport rather than huddled in one spot — the x
+// magnitudes here are deliberately large (previously kept tiny to avoid
+// pushing fragments past the right edge, which just made the break-apart
+// look cramped). Edge safety instead comes from scene.js/waypoints.js:
+// each page's peakDispersion and groupX are tuned so this full spread stays
+// on-screen at rest it never runs — dispersion is 0 whenever the mark is
+// assembled, so this only ever applies mid-scroll.
+// Left/right reach is deliberately asymmetric: every page biases the
+// assembled mark's rest position toward the right already (to clear its own
+// text there), so adding a large *rightward* scatter on top of that risks
+// running past the right edge. The left side has the room instead — this is
+// also the side that carries the mark across into the page's own reading
+// column during the break-apart, which is what "spans the whole screen"
+// means in practice, not a symmetric spread around an already-right-biased
+// centre.
 const DISPERSAL = {
-  flag: { dir: [0.16, 1.4, -1.2], rot: [0.5, -0.4, 0.2] },
-  stem: { dir: [-0.32, -1.3, -1.4], rot: [0.3, 0.55, 0.15] },
-  'stroke-left': { dir: [0.27, 1.1, 1.2], rot: [-0.35, 0.3, -0.2] },
-  'stroke-right': { dir: [0.32, -1.1, 1.0], rot: [0.2, -0.5, 0.35] },
+  flag: { dir: [1.6, 1.4, -1.2], rot: [0.5, -0.4, 0.2] },
+  stem: { dir: [-4.0, -1.3, -1.4], rot: [0.3, 0.55, 0.15] },
+  'stroke-left': { dir: [1.4, 1.1, 1.2], rot: [-0.35, 0.3, -0.2] },
+  'stroke-right': { dir: [-3.6, -1.1, 1.0], rot: [0.2, -0.5, 0.35] },
 };
 
 function buildEnvironment(renderer) {
@@ -206,14 +214,21 @@ export function createMonogram(renderer) {
 // makes the break-apart feel more deliberate/cinematic.
 const DISPERSED_SCALE_FLOOR = 0.72;
 
-export function applyDispersion(slabs, dispersion) {
+// scaleCompensation counters the outer group's own scale (see scene.js —
+// several pages shrink the assembled mark to clear their hero text) so the
+// break-apart's actual on-screen reach stays consistent everywhere. Without
+// it, a page tuned to a small assembled scale also got a proportionally
+// tiny, cramped-looking scatter, since group.scale multiplies every child's
+// local position — including this dispersal offset.
+export function applyDispersion(slabs, dispersion, scaleCompensation = 1) {
   slabs.forEach((mesh) => {
     const [px, py, pz] = mesh.userData.assembledPosition;
     const [dx, dy, dz] = mesh.userData.dispersalDir;
     const [rx, ry, rz] = mesh.userData.dispersalRot;
     const [arx, ary, arz] = mesh.userData.assembledRotation;
+    const spread = dispersion * scaleCompensation;
 
-    mesh.position.set(px + dx * dispersion, py + dy * dispersion, pz + dz * dispersion);
+    mesh.position.set(px + dx * spread, py + dy * spread, pz + dz * spread);
     mesh.rotation.set(arx + rx * dispersion, ary + ry * dispersion, arz + rz * dispersion);
     mesh.scale.setScalar(1 - (1 - DISPERSED_SCALE_FLOOR) * dispersion);
   });

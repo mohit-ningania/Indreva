@@ -105,6 +105,12 @@ function groupXAspectFactor() {
   return Math.min(1, camera.aspect / REFERENCE_ASPECT);
 }
 
+// See applyDispersion's own comment (monogram.js): the assembled scale a
+// page uses to clear its own text has nothing to do with how far the break
+// -apart should reach, so dispersal is compensated back up to how it would
+// look at this reference scale, on every page, regardless of its own.
+const DISPERSAL_REFERENCE_SCALE = 0.72;
+
 function applyMaterialTone(pageKey) {
   const tone = getWaypoint(pageKey).materialTone || 'dark';
   monogram.material.color.setHex(TONE_COLORS[tone]);
@@ -214,7 +220,7 @@ function applyPageWaypoint(pageKey, t) {
 
   const dispersion = Math.sin(st * Math.PI) * wp.monogram.peakDispersion;
   const scale = lerp(wp.monogram.scaleStart, wp.monogram.scaleEnd, st);
-  applyDispersion(monogram.slabs, dispersion);
+  applyDispersion(monogram.slabs, dispersion, DISPERSAL_REFERENCE_SCALE / scale);
   currentDispersion = dispersion;
   monogram.group.scale.setScalar(scale);
   monogram.group.position.y = lerp(wp.groupY.start, wp.groupY.end, st);
@@ -427,7 +433,7 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
     const b = VISION_STAGES[idx + 1] || a;
 
     const dispersion = lerp(a.dispersion, b.dispersion, localT);
-    applyDispersion(monogram.slabs, dispersion);
+    applyDispersion(monogram.slabs, dispersion, DISPERSAL_REFERENCE_SCALE / monogram.group.scale.x);
     currentDispersion = dispersion;
     camera.position.z = lerp(a.cameraZ, b.cameraZ, localT);
     scrollRig.rotation.y = lerp(a.rotationY, b.rotationY, localT);
