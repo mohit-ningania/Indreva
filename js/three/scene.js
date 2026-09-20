@@ -51,6 +51,18 @@ let currentDispersion = 0;
  */
 let ambientPhase = 0;
 
+// A bounded, always-running sway layered on top of the dispersion-scaled
+// spin above, so the assembled mark keeps visibly, gently turning even at
+// full rest (dispersion exactly 0 — true for most of what a visitor
+// actually sees between scroll gestures) instead of freezing solid there.
+// Self-bounded by construction (a sine, not an accumulator) rather than an
+// unscaled ambientPhase: it can never wind up anywhere near edge-on to the
+// camera — the failure mode ambientPhase's own scaling exists to avoid — no
+// matter how long the visitor dwells before scrolling again.
+let idleTime = 0;
+const IDLE_SWAY_AMPLITUDE = 0.4; // radians (~23deg) — nowhere near edge-on
+const IDLE_SWAY_SPEED = 0.22; // rad/s of the sway oscillation itself
+
 /** transitionState !== null while travelTo() is running; the per-page
  *  ScrollTrigger callback yields to it so the two never fight the camera. */
 let transitionState = null;
@@ -74,6 +86,42 @@ const TONE_COLORS = { dark: 0x2e3a46, light: 0xb8bcc2 };
 // out to near-white (metalness ~0.7 means reflection dominates over base
 // colour). Each page's dimAtEnd (waypoints.js) is a fraction of this start.
 const TONE_ENV_START = { dark: 0.65, light: 1.3 };
+
+// Fallback horizontal bias for pages that don't set their own wp.groupX.
+const DEFAULT_GROUP_X = 0.7;
+
+// Every groupX value in waypoints.js was tuned by eye/measurement at a
+// 1440x900 viewport. A perspective camera's horizontal FOV scales with
+// aspect ratio (width/height) at a fixed vertical FOV, so the same
+// world-space x offset lands proportionally further right on a narrower
+// desktop window (1024px, say) than it does at 1440 — enough, unchecked, to
+// push the mark's right edge back off-screen. Scaling groupX down by the
+// window's aspect relative to the tuning reference keeps its on-screen
+// position roughly constant across ordinary desktop widths; never scaled
+// *up* for wider/ultrawide windows since the tuned value is already the
+// intended on-screen position there.
+const REFERENCE_ASPECT = 1440 / 900;
+function groupXAspectFactor() {
+  return Math.min(1, camera.aspect / REFERENCE_ASPECT);
+}
+
+// The mark is only guaranteed clear of a page's own text at its two rest
+// states (t=0 landing, t=1 pre-footer) — those are the only moments each
+// page's groupX/scale were tuned against. Anywhere in between it's still
+// travelling through content whose layout it knows nothing about, so it
+// fades toward TRANSIT_OPACITY there: a soft, translucent pass-through
+// rather than a solid shape that might sit on top of a heading mid-scroll.
+// REST_ZONE is deliberately narrow — full opacity only very close to t=0/1 —
+// so it's already faded by the time a page's *second* section scrolls in.
+const REST_ZONE = 0.08;
+const TRANSIT_OPACITY = 0.4;
+function restOpacity(tc) {
+  const edgeDist = Math.min(tc, 1 - tc);
+  if (edgeDist >= REST_ZONE) return TRANSIT_OPACITY;
+  const k = edgeDist / REST_ZONE;
+  const s = k * k * (3 - 2 * k);
+  return lerp(1, TRANSIT_OPACITY, s);
+}
 function applyMaterialTone(pageKey) {
   const tone = getWaypoint(pageKey).materialTone || 'dark';
   monogram.material.color.setHex(TONE_COLORS[tone]);
@@ -102,15 +150,10 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
 
   const built = createMonogram(renderer);
   monogram = built;
-  // Biases the mark toward the right of the frame — paired with each page's
-  // own monogram.scaleStart/scaleEnd/peakDispersion and camera framing (see
-  // waypoints.js) so it reads as a flowing compositional element rather
-  // than sitting dead-center over the reading column. Kept modest on
-  // purpose: at full scatter (see monogram.js DISPERSAL) some slabs' own
-  // local x-offset adds on top of this, and a bigger bias here was pushing
-  // the total past the right edge of the viewport at ordinary window
-  // widths — invisible, reading as the logo getting cut off.
-  built.group.position.x = 0.7;
+  // Horizontal position is set every frame in applyPageWaypoint (each page's
+  // own wp.groupX, falling back to DEFAULT_GROUP_X) — this initial value is
+  // just what's on screen for the first paint before that first call lands.
+  built.group.position.x = DEFAULT_GROUP_X;
   scrollRig.add(built.group);
 
   // Lighting: deep blue-grey fill (ambient/hemi) + a cool key light for the
@@ -192,6 +235,9 @@ function applyPageWaypoint(pageKey, t) {
   currentDispersion = dispersion;
   monogram.group.scale.setScalar(scale);
   monogram.group.position.y = lerp(wp.groupY.start, wp.groupY.end, st);
+  const gx = wp.groupX || { start: DEFAULT_GROUP_X, end: DEFAULT_GROUP_X };
+  monogram.group.position.x = lerp(gx.start, gx.end, st) * groupXAspectFactor();
+  monogram.material.opacity = restOpacity(tc);
   const envStart = TONE_ENV_START[wp.materialTone || 'dark'];
   monogram.material.envMapIntensity = lerp(envStart, wp.dimAtEnd, st);
 }
@@ -232,6 +278,8 @@ export function travelTo(nextPageKey, duration = 0.6) {
     dispersion: 0,
     scale: monogram.group.scale.x,
     groupY: fromWp.groupY.end,
+    groupX: (fromWp.groupX || { end: DEFAULT_GROUP_X }).end ?? DEFAULT_GROUP_X,
+    opacity: monogram.material.opacity,
   };
   const to = {
     pos: toWp.camera.start.position,
@@ -240,6 +288,10 @@ export function travelTo(nextPageKey, duration = 0.6) {
     dispersion: 0,
     scale: toWp.monogram.scaleStart,
     groupY: toWp.groupY.start,
+    groupX: (toWp.groupX || { start: DEFAULT_GROUP_X }).start ?? DEFAULT_GROUP_X,
+    // Both ends of a transition are rest states (dispersion 0 throughout),
+    // so opacity always eases back to fully opaque here.
+    opacity: 1,
   };
 
   const fromColor = monogram.material.color.clone();
@@ -265,6 +317,8 @@ export function travelTo(nextPageKey, duration = 0.6) {
         currentDispersion = dispersion;
         monogram.group.scale.setScalar(lerp(from.scale, to.scale, proxy.t));
         monogram.group.position.y = lerp(from.groupY, to.groupY, proxy.t);
+        monogram.group.position.x = lerp(from.groupX, to.groupX, proxy.t) * groupXAspectFactor();
+        monogram.material.opacity = lerp(from.opacity, to.opacity, proxy.t);
         monogram.material.color.copy(fromColor).lerp(toColor, proxy.t);
       },
       onComplete: () => {
@@ -296,7 +350,9 @@ function renderLoop() {
   // been on the page.
   const wp = getWaypoint(currentPageKey);
   ambientPhase += wp.ambientRotationSpeed * delta;
-  monogram.group.rotation.y = ambientPhase * currentDispersion;
+  idleTime += delta;
+  const idleSway = Math.sin(idleTime * IDLE_SWAY_SPEED) * IDLE_SWAY_AMPLITUDE;
+  monogram.group.rotation.y = ambientPhase * currentDispersion + idleSway;
 
   renderer.render(scene, camera);
 }

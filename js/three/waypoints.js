@@ -28,8 +28,20 @@
  *     toward the footer boundary — the canvas itself never clips anything;
  *     the footer's own opaque background sits at a higher z-index (see
  *     layout.css) and naturally covers the mark's lower half, reading as
- *     "half tucked behind the footer" above the address column on the right
- *     (group.position.x's fixed rightward bias, see scene.js, puts it there).
+ *     "half tucked behind the footer" above the address column on the right.
+ *
+ *   groupX.start / groupX.end
+ *     World-space X offset of the whole mark, same start/end scrub as
+ *     everything else here. Optional — a page that omits it falls back to
+ *     scene.js's DEFAULT_GROUP_X. Tuned per page (together with
+ *     monogram.scaleStart/scaleEnd) so the mark's own bounding box clears
+ *     that page's hero/rest-state text at t=0 and t=1 specifically — the two
+ *     moments a visitor actually stops scrolling and can scrutinize exact
+ *     alignment. scene.js also fades the material toward a translucent
+ *     TRANSIT_OPACITY away from those two rest states, since a page's own
+ *     body copy (headings, cards) isn't something this rig can see or dodge
+ *     mid-scroll — the fade is what keeps an incidental pass-behind reading
+ *     as "soft background element," not "logo colliding with a heading."
  *
  *   ambientRotationSpeed
  *     Radians/second of the *independent* idle rotation layered on top of
@@ -67,10 +79,14 @@ export const WAYPOINTS = {
       start: { position: [0, 0.1, 5.2], rotation: [0, 0, 0], fov: 42 },
       end: { position: [0, -0.3, 4.5], rotation: [0, 0, 0], fov: 44 },
     },
-    // Bigger on load (1.35 vs. the old 1) — the mark was reading small
-    // against how much clear space sits around it in the hero.
-    monogram: { peakDispersion: 0.35, scaleStart: 1.35, scaleEnd: 1.1 },
+    // Scale halved from an earlier 1.35/1.1 and groupX pushed out to 1.6 —
+    // measured against the hero title's actual rendered text (not its
+    // containing element, which can be wider than the glyphs) at 1440px:
+    // the old size/position had the assembled mark sitting directly over
+    // "Opportunities." at t=0.
+    monogram: { peakDispersion: 0.35, scaleStart: 0.675, scaleEnd: 0.55 },
     groupY: { start: 0, end: -0.4 },
+    groupX: { start: 1.6, end: 1.6 },
     ambientRotationSpeed: 0.09,
     dimAtEnd: 0.6,
   },
@@ -84,8 +100,11 @@ export const WAYPOINTS = {
       start: { position: [-1.4, 0.3, 4.5], rotation: [0, -0.3, 0], fov: 46 },
       end: { position: [0, -0.3, 4.5], rotation: [0, 0, 0], fov: 44 },
     },
-    monogram: { peakDispersion: 0.55, scaleStart: 1.1, scaleEnd: 1.05 },
+    // Scale halved and groupX pushed to 1.9 — clears the "Built By Two
+    // Founders..." hero title at t=0/t=1, measured against actual glyphs.
+    monogram: { peakDispersion: 0.55, scaleStart: 0.55, scaleEnd: 0.525 },
     groupY: { start: 0, end: -0.4 },
+    groupX: { start: 1.8, end: 1.8 },
     ambientRotationSpeed: 0.05,
     dimAtEnd: 0.55,
   },
@@ -107,8 +126,10 @@ export const WAYPOINTS = {
       start: { position: [-1.6, -0.3, 6.8], rotation: [0, -0.18, 0], fov: 44 },
       end: { position: [0, -0.3, 4.5], rotation: [0, 0, 0], fov: 44 },
     },
-    monogram: { peakDispersion: 0.68, scaleStart: 0.82, scaleEnd: 1.05 },
+    // Scale halved — clears the "Globally Capable..." hero title at t=0/t=1.
+    monogram: { peakDispersion: 0.68, scaleStart: 0.41, scaleEnd: 0.525 },
     groupY: { start: 0, end: -0.4 },
+    groupX: { start: 1.0, end: 1.0 },
     ambientRotationSpeed: 0.03,
     dimAtEnd: 0.5,
   },
@@ -136,8 +157,13 @@ export const WAYPOINTS = {
       start: { position: [0, 0.3, 6.5], rotation: [0, 0, 0], fov: 44 },
       end: { position: [0, -0.2, 4.5], rotation: [0, 0, 0], fov: 42 },
     },
-    monogram: { peakDispersion: 0.5, scaleStart: 1.0, scaleEnd: 1.1 },
+    // Scale halved and groupX pushed to 1.6 — this page's form fields sit
+    // directly below a short hero with almost no scroll runway between them,
+    // so at the old size the mark landed on the "Name"/"Email" labels at
+    // t=0 regardless of horizontal position.
+    monogram: { peakDispersion: 0.5, scaleStart: 0.5, scaleEnd: 0.55 },
     groupY: { start: 0, end: -0.4 },
+    groupX: { start: 1.6, end: 1.6 },
     ambientRotationSpeed: 0.06,
     dimAtEnd: 0.6,
   },
