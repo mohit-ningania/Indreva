@@ -196,6 +196,19 @@ function onResize() {
  * opaque background — the canvas itself never clips it; the footer's own
  * z-index (above the canvas, see layout.css) does that naturally.
  */
+// Normally a single sine hump: assembled at st=0 and st=1, most scattered at
+// the midpoint. A page can instead give monogram.reassembleAt a scroll
+// fraction (0..1) where it wants the mark fully assembled mid-page — two
+// smaller humps either side of that point, still reaching 0 at st=0/1 too.
+// Used on About so the mark visibly comes together right as the "two
+// founders" section arrives, instead of being at its most scattered there.
+function dispersionAt(st, monogramConfig) {
+  const mid = monogramConfig.reassembleAt;
+  if (mid == null) return Math.sin(st * Math.PI);
+  if (st <= mid) return Math.sin((st / mid) * Math.PI);
+  return Math.sin(((st - mid) / (1 - mid)) * Math.PI);
+}
+
 function applyPageWaypoint(pageKey, t) {
   const wp = getWaypoint(pageKey);
   const cam = wp.camera;
@@ -218,7 +231,7 @@ function applyPageWaypoint(pageKey, t) {
   camera.updateProjectionMatrix();
   camera.lookAt(0, 0, 0);
 
-  const dispersion = Math.sin(st * Math.PI) * wp.monogram.peakDispersion;
+  const dispersion = dispersionAt(st, wp.monogram) * wp.monogram.peakDispersion;
   const scale = lerp(wp.monogram.scaleStart, wp.monogram.scaleEnd, st);
   applyDispersion(monogram.slabs, dispersion, DISPERSAL_REFERENCE_SCALE / scale);
   currentDispersion = dispersion;

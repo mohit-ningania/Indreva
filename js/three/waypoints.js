@@ -104,7 +104,11 @@ export const WAYPOINTS = {
     },
     // Scale halved and groupX pushed to 1.9 — clears the "Built By Two
     // Founders..." hero title at t=0/t=1, measured against actual glyphs.
-    monogram: { peakDispersion: 0.55, scaleStart: 0.55, scaleEnd: 0.525 },
+    // reassembleAt: the mark comes fully together right as the "Mohit /
+    // Sahil" founder cards scroll into view, instead of being at its most
+    // scattered there — the two-founders section getting a visibly whole
+    // mark, not a random scatter of fragments, is the point.
+    monogram: { peakDispersion: 0.55, scaleStart: 0.55, scaleEnd: 0.525, reassembleAt: 0.5 },
     groupY: { start: 0, end: -0.4 },
     groupX: { start: 1.4, end: 1.4 },
     ambientRotationSpeed: 0.05,
