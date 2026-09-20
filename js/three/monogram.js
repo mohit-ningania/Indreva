@@ -174,8 +174,6 @@ export function createMonogram(renderer) {
     roughness: 0.46,       // more matte — keeps specular highlights soft instead of blowing out bright
     envMap,
     envMapIntensity: 0.65,
-    transparent: true,
-    opacity: 1,
   });
 
   const slabs = SLAB_DEFS.map((def) => {

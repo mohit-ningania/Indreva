@@ -105,23 +105,6 @@ function groupXAspectFactor() {
   return Math.min(1, camera.aspect / REFERENCE_ASPECT);
 }
 
-// The mark is only guaranteed clear of a page's own text at its two rest
-// states (t=0 landing, t=1 pre-footer) — those are the only moments each
-// page's groupX/scale were tuned against. Anywhere in between it's still
-// travelling through content whose layout it knows nothing about, so it
-// fades toward TRANSIT_OPACITY there: a soft, translucent pass-through
-// rather than a solid shape that might sit on top of a heading mid-scroll.
-// REST_ZONE is deliberately narrow — full opacity only very close to t=0/1 —
-// so it's already faded by the time a page's *second* section scrolls in.
-const REST_ZONE = 0.08;
-const TRANSIT_OPACITY = 0.4;
-function restOpacity(tc) {
-  const edgeDist = Math.min(tc, 1 - tc);
-  if (edgeDist >= REST_ZONE) return TRANSIT_OPACITY;
-  const k = edgeDist / REST_ZONE;
-  const s = k * k * (3 - 2 * k);
-  return lerp(1, TRANSIT_OPACITY, s);
-}
 function applyMaterialTone(pageKey) {
   const tone = getWaypoint(pageKey).materialTone || 'dark';
   monogram.material.color.setHex(TONE_COLORS[tone]);
@@ -237,7 +220,6 @@ function applyPageWaypoint(pageKey, t) {
   monogram.group.position.y = lerp(wp.groupY.start, wp.groupY.end, st);
   const gx = wp.groupX || { start: DEFAULT_GROUP_X, end: DEFAULT_GROUP_X };
   monogram.group.position.x = lerp(gx.start, gx.end, st) * groupXAspectFactor();
-  monogram.material.opacity = restOpacity(tc);
   const envStart = TONE_ENV_START[wp.materialTone || 'dark'];
   monogram.material.envMapIntensity = lerp(envStart, wp.dimAtEnd, st);
 }
@@ -279,7 +261,6 @@ export function travelTo(nextPageKey, duration = 0.6) {
     scale: monogram.group.scale.x,
     groupY: fromWp.groupY.end,
     groupX: (fromWp.groupX || { end: DEFAULT_GROUP_X }).end ?? DEFAULT_GROUP_X,
-    opacity: monogram.material.opacity,
   };
   const to = {
     pos: toWp.camera.start.position,
@@ -289,9 +270,6 @@ export function travelTo(nextPageKey, duration = 0.6) {
     scale: toWp.monogram.scaleStart,
     groupY: toWp.groupY.start,
     groupX: (toWp.groupX || { start: DEFAULT_GROUP_X }).start ?? DEFAULT_GROUP_X,
-    // Both ends of a transition are rest states (dispersion 0 throughout),
-    // so opacity always eases back to fully opaque here.
-    opacity: 1,
   };
 
   const fromColor = monogram.material.color.clone();
@@ -318,7 +296,6 @@ export function travelTo(nextPageKey, duration = 0.6) {
         monogram.group.scale.setScalar(lerp(from.scale, to.scale, proxy.t));
         monogram.group.position.y = lerp(from.groupY, to.groupY, proxy.t);
         monogram.group.position.x = lerp(from.groupX, to.groupX, proxy.t) * groupXAspectFactor();
-        monogram.material.opacity = lerp(from.opacity, to.opacity, proxy.t);
         monogram.material.color.copy(fromColor).lerp(toColor, proxy.t);
       },
       onComplete: () => {
