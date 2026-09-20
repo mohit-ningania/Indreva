@@ -79,14 +79,16 @@ export const WAYPOINTS = {
       start: { position: [0, 0.1, 5.2], rotation: [0, 0, 0], fov: 42 },
       end: { position: [0, -0.3, 4.5], rotation: [0, 0, 0], fov: 44 },
     },
-    // Scale halved from an earlier 1.35/1.1 and groupX pushed out to 1.6 —
+    // Scale halved from an earlier 1.35/1.1 and groupX pushed out —
     // measured against the hero title's actual rendered text (not its
     // containing element, which can be wider than the glyphs) at 1440px:
     // the old size/position had the assembled mark sitting directly over
-    // "Opportunities." at t=0.
-    monogram: { peakDispersion: 0.35, scaleStart: 0.675, scaleEnd: 0.55 },
+    // "Opportunities." at t=0. Bumped back up ~15% and shifted further
+    // right afterward (per owner feedback the mark read too small/central)
+    // — re-verified against the same hero text and edge-safe down to 1024px.
+    monogram: { peakDispersion: 0.35, scaleStart: 0.776, scaleEnd: 0.6325 },
     groupY: { start: 0, end: -0.4 },
-    groupX: { start: 1.6, end: 1.6 },
+    groupX: { start: 1.7, end: 1.7 },
     ambientRotationSpeed: 0.09,
     dimAtEnd: 0.6,
   },
