@@ -232,7 +232,11 @@ function bindScrollTrigger(pageKey) {
     trigger: document.body,
     start: 'top top',
     end: 'bottom bottom',
-    scrub: 1, // slight lag for a cinematic, weighted feel — never a hard snap
+    // Cinematic lag, but not so much that the camera visibly trails a fast
+    // flick — layered on top of Lenis's own smoothing, scrub:1 meant the
+    // mark kept drifting toward a stale target for a full second after the
+    // page had already settled, reading as sluggish rather than smooth.
+    scrub: 0.4,
     onUpdate: (self) => {
       if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
       applyPageWaypoint(pageKey, self.progress);

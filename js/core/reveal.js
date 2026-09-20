@@ -78,7 +78,12 @@ export function initReveals(gsap, ScrollTrigger) {
     : { autoAlpha: 0, y: 32, x: -12 };
   const toBase = capabilities.reducedMotion
     ? { autoAlpha: 1, duration: 0.35, ease: 'none' }
-    : { autoAlpha: 1, y: 0, x: 0, duration: 0.7, ease: 'power3.out' };
+    // Shortened from 0.7s: a fast scroll sweeps past several triggers within
+    // a couple hundred milliseconds of real time, and at 0.7s each these
+    // were still overlapping the next section's own reveal instead of
+    // settling first — several stacked, half-finished fades all visible at
+    // once instead of one section revealing cleanly after another.
+    : { autoAlpha: 1, y: 0, x: 0, duration: 0.45, ease: 'power3.out' };
 
   const groups = new Map();
   document.querySelectorAll('[data-reveal]').forEach((el) => {

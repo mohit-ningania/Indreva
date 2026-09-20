@@ -22,7 +22,13 @@ export async function initSmoothScroll(gsap, ScrollTrigger) {
   const { default: Lenis } = await import('../vendor/lenis.mjs');
 
   const lenis = new Lenis({
-    duration: 1.15,
+    // A fast flick used to glide for up to 1.15s of heavy deceleration —
+    // long enough that the glide swept past several sections' reveal
+    // triggers within a couple hundred milliseconds of real time, so their
+    // 0.7s entrance animations piled up and overlapped instead of settling
+    // one at a time. Shorter duration keeps the weighted, non-native feel
+    // without letting one flick outrun that many triggers at once.
+    duration: 0.75,
     easing: (t) => 1 - Math.pow(1 - t, 4), // heavy, weighted deceleration — no rubber-band overshoot
     smoothWheel: true,
     wheelMultiplier: 1,
