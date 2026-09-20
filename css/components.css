@@ -20,8 +20,8 @@
      header markup) rather than the icon's full 0..104 square coordinate
      space, which was mostly empty margin — that whitespace made the mark
      read as small next to "INDREVA" even though the box itself was 40px. */
-  width: 58px;
-  height: 36px;
+  width: 46px;
+  height: 28px;
   flex-shrink: 0;
 }
 
