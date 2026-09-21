@@ -77,6 +77,19 @@ let idleTime = 0;
 const IDLE_SWAY_AMPLITUDE = 0.4; // radians (~23deg) — nowhere near edge-on
 const IDLE_SWAY_SPEED = 0.22; // rad/s of the sway oscillation itself
 
+// A soft vertical bob + gentle in-plane tilt, layered on top of the turntable
+// sway above, for a more organic "flowy" idle read (per owner request re:
+// the home hero mark specifically) rather than a purely mechanical spin.
+// Both are tiny and self-bounded (sines around the mark's own resting spot,
+// never accumulating) so they can't drift it into overlap with page text.
+// Tilt uses rotation.z (in-plane roll), not x/y, so the mark never turns
+// edge-on to the camera the way an x-rotation would.
+let idleBaseY = 0;
+const IDLE_BOB_AMPLITUDE = 0.06; // world units
+const IDLE_BOB_SPEED = 0.35; // rad/s
+const IDLE_TILT_AMPLITUDE = 0.05; // radians (~3deg)
+const IDLE_TILT_SPEED = 0.17; // rad/s — deliberately not a clean multiple of the others, for an unsynchronized, organic drift
+
 /** transitionState !== null while travelTo() is running; the per-page
  *  ScrollTrigger callback yields to it so the two never fight the camera. */
 let transitionState = null;
@@ -103,6 +116,12 @@ const TONE_ENV_START = { dark: 0.65, light: 1.3 };
 
 // Fallback horizontal bias for pages that don't set their own wp.groupX.
 const DEFAULT_GROUP_X = 0.7;
+
+// Per owner request, the floating 3D monogram now only appears on the pages
+// that most need its presence — the home hero (the site's first impression)
+// and Vision (its own chapter uses the mark's camera/dispersion journey
+// directly) — everywhere else keeps just the header's flat logo.
+const MONOGRAM_VISIBLE_PAGES = new Set(['home', 'vision']);
 
 // Every groupX value in waypoints.js was tuned by eye/measurement at a
 // 1440x900 viewport. A perspective camera's horizontal FOV scales with
@@ -247,7 +266,8 @@ function applyPageWaypoint(pageKey, t) {
   applyDispersion(monogram.slabs, dispersion, DISPERSAL_REFERENCE_SCALE / scale);
   currentDispersion = dispersion;
   monogram.group.scale.setScalar(scale);
-  monogram.group.position.y = lerp(wp.groupY.start, wp.groupY.end, st);
+  idleBaseY = lerp(wp.groupY.start, wp.groupY.end, st);
+  monogram.group.position.y = idleBaseY;
   const gx = wp.groupX || { start: DEFAULT_GROUP_X, end: DEFAULT_GROUP_X };
   monogram.group.position.x = lerp(gx.start, gx.end, st) * groupXAspectFactor();
   const envStart = TONE_ENV_START[wp.materialTone || 'dark'];
@@ -263,13 +283,11 @@ function applyPageWaypoint(pageKey, t) {
  * rise wasn't wanted either — the mark should be fully still except for its
  * own idle sway) and for the Vision-carousel exception.
  *
- * Also owns the mark's per-page visibility: per owner request, the floating
- * 3D monogram now only appears on the Vision page — every other page keeps
- * just the header's flat logo (untouched by this) and no floating mark.
+ * Also owns the mark's per-page visibility — see MONOGRAM_VISIBLE_PAGES.
  */
 function bindScrollTrigger(pageKey) {
   applyMaterialTone(pageKey); // page-level — set once per page, not per frame
-  monogram.group.visible = pageKey === 'vision';
+  monogram.group.visible = MONOGRAM_VISIBLE_PAGES.has(pageKey);
   if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
   applyPageWaypoint(pageKey, 0);
 }
@@ -322,7 +340,7 @@ export function travelTo(nextPageKey, duration = 0.6) {
   // Switch the mark's visibility for the destination page right away — the
   // diagonal wipe (transitions.js) covers the screen for the first stretch
   // of this same tween, so the swap itself is never seen.
-  monogram.group.visible = nextPageKey === 'vision';
+  monogram.group.visible = MONOGRAM_VISIBLE_PAGES.has(nextPageKey);
 
   return new Promise((resolve) => {
     const proxy = { t: 0 };
@@ -376,6 +394,13 @@ function renderLoop() {
   idleTime += delta;
   const idleSway = Math.sin(idleTime * IDLE_SWAY_SPEED) * IDLE_SWAY_AMPLITUDE;
   monogram.group.rotation.y = ambientPhase * currentDispersion + idleSway;
+
+  // Flowy idle bob + tilt (see IDLE_BOB_*/IDLE_TILT_* above) — skipped mid
+  // page-transition, since travelTo's own tween is driving position.y there.
+  if (!transitionState) {
+    monogram.group.position.y = idleBaseY + Math.sin(idleTime * IDLE_BOB_SPEED) * IDLE_BOB_AMPLITUDE;
+  }
+  monogram.group.rotation.z = Math.sin(idleTime * IDLE_TILT_SPEED + 1.3) * IDLE_TILT_AMPLITUDE;
 
   renderer.render(scene, camera);
 }

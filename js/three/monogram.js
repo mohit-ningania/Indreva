@@ -180,10 +180,15 @@ export function createMonogram(renderer) {
 
   const envMap = buildEnvironment(renderer);
 
+  // Metalness/roughness nudged up slightly (was 0.7/0.46) for a crisper,
+  // more premium reflection — per owner request for a "premium" read on the
+  // home hero mark — while staying short of a full mirror-chrome look so the
+  // dark base colour still dominates over the reflection (see the dim/narrow
+  // env map above, built specifically to counter that at high metalness).
   const material = new THREE.MeshStandardMaterial({
     color: 0x2e3a46,       // Deep Blue-Grey — dark metal, the default on the site's light pages
-    metalness: 0.7,        // lower than a mirror-chrome look so the dark base colour stays dominant
-    roughness: 0.46,       // more matte — keeps specular highlights soft instead of blowing out bright
+    metalness: 0.74,
+    roughness: 0.38,
     envMap,
     envMapIntensity: 0.65,
   });
