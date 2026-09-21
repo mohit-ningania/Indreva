@@ -6,22 +6,20 @@
  * fake-SPA page-transition layer never tears this down, only calls
  * `travelTo()` on it).
  *
- *   1. WITHIN a page   -> no scroll-linked camera/dispersion/scale animation.
- *                         The mark is set once, to that page's waypoint at
- *                         t=0 (see waypoints.js `camera.start`/`monogram
- *                         .scaleStart`/etc.), and stays there — visually
- *                         static in world space while the page's own content
- *                         scrolls past it underneath (per owner feedback: the
- *                         scroll-driven break-apart/travel motion read as
- *                         distracting rather than interesting). The one
- *                         exception is Y position: a lightweight scrubbed
- *                         ScrollTrigger (see SCROLL_RISE, bindScrollTrigger)
- *                         still rises the mark a little as the page scrolls
- *                         — per the follow-up owner request to keep it
- *                         "going up" with the scroll rather than pinned dead
- *                         still. The other motion left at rest is the
- *                         always-running idle sway (see IDLE_SWAY_* below)
- *                         applied in renderLoop.
+ *   1. WITHIN a page   -> NO scroll-linked animation whatsoever. The mark is
+ *                         set once, to that page's waypoint at t=0 (see
+ *                         waypoints.js `camera.start`/`monogram.scaleStart`/
+ *                         `groupY.start`/`groupX.start`/etc.), and stays
+ *                         there completely still in world space — camera,
+ *                         dispersion, scale, and position all fixed — while
+ *                         the page's own content scrolls past it underneath.
+ *                         (Per owner feedback, twice: first that the
+ *                         scroll-driven camera/break-apart travel read as
+ *                         distracting, then that even a small residual
+ *                         scroll-tied rise wasn't wanted either.) The only
+ *                         motion left at rest is the always-running idle sway
+ *                         (see IDLE_SWAY_* below) applied in renderLoop —
+ *                         time-driven, not scroll-driven.
  *                         Exception: Vision's `bindVisionHorizontal` pinned
  *                         section is a distinct content-navigation mechanic
  *                         (it drives the horizontal stage carousel itself,
@@ -42,7 +40,6 @@ import { capabilities } from '../core/device.js';
 let renderer, camera, scene, monogram, scrollRig;
 let clock;
 let currentPageKey = 'home';
-let parallaxScrollTrigger = null;
 let rafId = null;
 let isVisible = true;
 let gsapRef, ScrollTriggerRef;
@@ -257,37 +254,19 @@ function applyPageWaypoint(pageKey, t) {
   monogram.material.envMapIntensity = lerp(envStart, wp.dimAtEnd, st);
 }
 
-// How far the mark rises (world-space Y) over one full top-to-bottom scroll
-// of a page — the one bit of scroll-linked motion the owner asked to keep
-// after the rest was removed (see module header): "I want this to go up
-// when I'm scrolling with the page." Camera, dispersion, scale and X stay
-// completely static; only this Y offset tracks scroll position.
-const SCROLL_RISE = 0.55;
-
 /**
- * Sets the camera + monogram to the page's resting (t=0) framing once, then
- * binds a scrubbed ScrollTrigger that updates *only* the mark's Y position
- * as the page scrolls (see SCROLL_RISE) — everything else stays static. See
- * the module header for why (owner feedback: the scroll-driven camera/break
- * -apart motion read as distracting) and for the Vision-carousel exception.
+ * Sets the camera + monogram to the page's resting (t=0) framing once, and
+ * leaves them there for the rest of that page's scroll — no scroll-linked
+ * motion at all, not even a partial drift. See the module header for why
+ * (owner feedback, twice over: first that the scroll-driven camera/break
+ * -apart motion read as distracting, then that even a residual scroll-tied
+ * rise wasn't wanted either — the mark should be fully still except for its
+ * own idle sway) and for the Vision-carousel exception.
  */
 function bindScrollTrigger(pageKey) {
   applyMaterialTone(pageKey); // page-level — set once per page, not per frame
-  if (parallaxScrollTrigger) { parallaxScrollTrigger.kill(); parallaxScrollTrigger = null; }
   if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
   applyPageWaypoint(pageKey, 0);
-
-  const baseY = getWaypoint(pageKey).groupY.start ?? 0;
-  parallaxScrollTrigger = ScrollTriggerRef.create({
-    trigger: document.body,
-    start: 'top top',
-    end: 'bottom bottom',
-    scrub: 0.4,
-    onUpdate: (self) => {
-      if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
-      monogram.group.position.y = baseY + self.progress * SCROLL_RISE;
-    },
-  });
 }
 
 /**
