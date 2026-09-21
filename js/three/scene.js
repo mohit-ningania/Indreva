@@ -39,6 +39,7 @@ import { capabilities } from '../core/device.js';
 
 let renderer, camera, scene, monogram, scrollRig;
 let clock;
+let canvasEl;
 let currentPageKey = 'home';
 let rafId = null;
 let isVisible = true;
@@ -123,6 +124,58 @@ const DEFAULT_GROUP_X = 0.7;
 // directly) — everywhere else keeps just the header's flat logo.
 const MONOGRAM_VISIBLE_PAGES = new Set(['home', 'vision']);
 
+// Pages where the canvas is parked in normal document flow (position:
+// absolute, sized/offset to exactly cover that page's hero section) instead
+// of pinned to the viewport — per owner request, the home hero's mark should
+// scroll away together with its parallel hero text, not stay fixed on screen
+// while the text scrolls past underneath it. Every other page (including
+// Vision, whose own pinned horizontal carousel already depends on the
+// canvas staying viewport-fixed throughout) keeps the original full-
+// viewport `position: fixed` canvas — see updateCanvasLayout.
+const SCROLL_LOCKED_PAGES = new Set(['home']);
+
+/**
+ * Either pins the canvas to the viewport (the default, every page but the
+ * ones in SCROLL_LOCKED_PAGES) or parks it in the document at that page's
+ * `.hero` section (top/height matching the section's own box) so normal
+ * page scrolling carries it away exactly like any other in-flow element —
+ * no per-frame scroll math needed, the browser does it natively. Renderer
+ * size + camera aspect are kept in lockstep with whichever box the canvas
+ * currently occupies.
+ */
+function updateCanvasLayout(pageKey) {
+  if (!renderer || !camera || !canvasEl) return;
+
+  // renderer.setSize() below also writes the canvas's CSS width/height
+  // itself (Three.js's default `updateStyle: true`), so only `position`/
+  // `top`/`left` need setting explicitly here.
+  if (SCROLL_LOCKED_PAGES.has(pageKey)) {
+    const heroEl = document.querySelector('.hero');
+    if (heroEl) {
+      const rect = heroEl.getBoundingClientRect();
+      const height = Math.round(rect.height);
+      canvasEl.style.position = 'absolute';
+      canvasEl.style.top = Math.round(rect.top + window.scrollY) + 'px';
+      canvasEl.style.left = '0';
+      renderer.setSize(window.innerWidth, height);
+      camera.aspect = window.innerWidth / height;
+      camera.updateProjectionMatrix();
+      return;
+    }
+    // .hero not in the DOM yet (mid page-transition, before the fake-SPA
+    // content swap lands) — fall through to the fixed-fullscreen default
+    // below rather than sizing against a nonexistent element; the follow-up
+    // refreshForPage call after the swap re-runs this with the real DOM.
+  }
+
+  canvasEl.style.position = 'fixed';
+  canvasEl.style.top = '0';
+  canvasEl.style.left = '0';
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+}
+
 // Every groupX value in waypoints.js was tuned by eye/measurement at a
 // 1440x900 viewport. A perspective camera's horizontal FOV scales with
 // aspect ratio (width/height) at a fixed vertical FOV, so the same
@@ -152,6 +205,7 @@ function applyMaterialTone(pageKey) {
 export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
   gsapRef = gsap;
   ScrollTriggerRef = ScrollTrigger;
+  canvasEl = canvas;
   currentPageKey = initialPage;
   clock = new THREE.Clock();
 
@@ -211,9 +265,7 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
 
 function onResize() {
   if (!renderer) return;
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  updateCanvasLayout(currentPageKey);
 }
 
 /**
@@ -283,11 +335,13 @@ function applyPageWaypoint(pageKey, t) {
  * rise wasn't wanted either — the mark should be fully still except for its
  * own idle sway) and for the Vision-carousel exception.
  *
- * Also owns the mark's per-page visibility — see MONOGRAM_VISIBLE_PAGES.
+ * Also owns the mark's per-page visibility (MONOGRAM_VISIBLE_PAGES) and
+ * canvas layout (SCROLL_LOCKED_PAGES / updateCanvasLayout).
  */
 function bindScrollTrigger(pageKey) {
   applyMaterialTone(pageKey); // page-level — set once per page, not per frame
   monogram.group.visible = MONOGRAM_VISIBLE_PAGES.has(pageKey);
+  updateCanvasLayout(pageKey); // before applyPageWaypoint: that reads the aspect this sets
   if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
   applyPageWaypoint(pageKey, 0);
 }

@@ -9,8 +9,14 @@
 }
 
 /* ---- Persistent WebGL / fallback canvas layer ----
-   Sits behind all DOM content, fixed to viewport, spans the whole
-   scroll journey. z-index below content, above body background. */
+   Sits behind all DOM content. Fixed to the viewport by default, spanning
+   the whole scroll journey, on every page except the home page — there
+   scene.js's updateCanvasLayout() switches this to position:absolute and
+   sizes/offsets it to exactly cover the hero section, so the floating mark
+   scrolls away together with its parallel hero text instead of staying
+   pinned on screen while that text scrolls past underneath it. The values
+   below are the fixed-viewport default; JS overrides them inline whenever
+   it switches modes. z-index below content, above body background. */
 #scene-canvas {
   position: fixed;
   inset: 0;
