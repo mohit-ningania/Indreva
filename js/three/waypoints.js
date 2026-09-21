@@ -166,17 +166,24 @@ export const WAYPOINTS = {
       start: { position: [0, 0.2, 9.5], rotation: [0, 0, 0], fov: 40 },
       end: { position: [0, -0.3, 3.0], rotation: [0, 0.15, 0], fov: 46 },
     },
-    // scaleStart/groupX.start clear the hero title (three stacked lines
-    // spanning most of the frame) — bumped up from an earlier 0.63/2.2 per
-    // feedback the mark read too small against that title. scaleEnd is much
-    // smaller than a typical page's, and groupX.end pulls back toward
-    // centre, because camera.end above sits at z=3 — far closer than other
-    // pages' ~4.5 — so the same scale/offset that reads fine elsewhere
-    // would blow up oversized here; scaleEnd trimmed slightly further
-    // (0.4 -> 0.36) to hold that close-up framing on-screen at 1024px too.
-    monogram: { peakDispersion: 0.3, scaleStart: 0.9, scaleEnd: 0.36 },
-    groupY: { start: 0, end: 0 },
-    groupX: { start: 2.6, end: 0.7 },
+    // scaleStart/groupX.start/groupY.start clear the hero title (three
+    // stacked lines spanning most of the frame) — bumped up twice now
+    // (0.63/2.2 -> 0.9/2.6 -> this) per feedback the mark should fill more
+    // of the page. Pushed further right and up (groupY.start now positive,
+    // was 0) rather than just scaled in place, since the page has generous
+    // clear space to the right of the title and above the lede paragraph
+    // but comparatively little to the left (the title) or below (the lede)
+    // — growing straight into those tight sides would have collided with
+    // them well before the mark could read as meaningfully bigger. Verified
+    // against the title/lede's actual rendered text (not their containing
+    // elements) with clearance at 1024/1280/1440/1920px; scaleEnd is
+    // unaffected (still much smaller than a typical page's, and groupX.end
+    // still pulls back toward centre) because camera.end sits at z=3 — far
+    // closer than other pages' ~4.5 — so the same scale/offset that reads
+    // fine at rest would blow up oversized in that close-up framing.
+    monogram: { peakDispersion: 0.3, scaleStart: 1.2, scaleEnd: 0.36 },
+    groupY: { start: 0.28, end: 0 },
+    groupX: { start: 3.2, end: 0.7 },
     ambientRotationSpeed: 0.02,
     dimAtEnd: 0.5,
   },
