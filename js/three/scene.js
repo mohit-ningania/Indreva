@@ -124,6 +124,22 @@ const DEFAULT_GROUP_X = 0.7;
 // directly) — everywhere else keeps just the header's flat logo.
 const MONOGRAM_VISIBLE_PAGES = new Set(['home', 'vision']);
 
+// Every per-page scale/groupX tuning in waypoints.js was measured against
+// real desktop widths (1024px and up) — groupXAspectFactor compensates for
+// aspect ratio down to that floor, but was never meant to reach true phone
+// widths (~360-430px), where the same assembled mark is large enough
+// relative to the screen to sit directly on top of the hero text no matter
+// how far it's nudged sideways. Hiding the mark below this width — same
+// breakpoint Vision's own horizontal carousel already switches off at
+// (js/pages/vision.js MOBILE_BREAKPOINT) — is far more robust than chasing
+// an ever-smaller scale that would still eventually break on a narrower
+// phone; the header's flat logo is still there regardless.
+const MOBILE_HIDE_BREAKPOINT = 720;
+
+function isMonogramVisibleFor(pageKey) {
+  return MONOGRAM_VISIBLE_PAGES.has(pageKey) && window.innerWidth > MOBILE_HIDE_BREAKPOINT;
+}
+
 // Pages where the canvas is parked in normal document flow (position:
 // absolute, sized/offset to exactly cover that page's hero section) instead
 // of pinned to the viewport — per owner request, the home hero's mark should
@@ -265,6 +281,7 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
 
 function onResize() {
   if (!renderer) return;
+  monogram.group.visible = isMonogramVisibleFor(currentPageKey);
   updateCanvasLayout(currentPageKey);
 }
 
@@ -335,12 +352,13 @@ function applyPageWaypoint(pageKey, t) {
  * rise wasn't wanted either — the mark should be fully still except for its
  * own idle sway) and for the Vision-carousel exception.
  *
- * Also owns the mark's per-page visibility (MONOGRAM_VISIBLE_PAGES) and
- * canvas layout (SCROLL_LOCKED_PAGES / updateCanvasLayout).
+ * Also owns the mark's per-page visibility (isMonogramVisibleFor —
+ * MONOGRAM_VISIBLE_PAGES plus the MOBILE_HIDE_BREAKPOINT cutoff) and canvas
+ * layout (SCROLL_LOCKED_PAGES / updateCanvasLayout).
  */
 function bindScrollTrigger(pageKey) {
   applyMaterialTone(pageKey); // page-level — set once per page, not per frame
-  monogram.group.visible = MONOGRAM_VISIBLE_PAGES.has(pageKey);
+  monogram.group.visible = isMonogramVisibleFor(pageKey);
   updateCanvasLayout(pageKey); // before applyPageWaypoint: that reads the aspect this sets
   if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
   applyPageWaypoint(pageKey, 0);
@@ -394,7 +412,7 @@ export function travelTo(nextPageKey, duration = 0.6) {
   // Switch the mark's visibility for the destination page right away — the
   // diagonal wipe (transitions.js) covers the screen for the first stretch
   // of this same tween, so the swap itself is never seen.
-  monogram.group.visible = MONOGRAM_VISIBLE_PAGES.has(nextPageKey);
+  monogram.group.visible = isMonogramVisibleFor(nextPageKey);
 
   return new Promise((resolve) => {
     const proxy = { t: 0 };
