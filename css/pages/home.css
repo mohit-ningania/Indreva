@@ -11,8 +11,8 @@
 .hero__eyebrow { color: var(--accent-label); margin-bottom: var(--sp-5); }
 
 .hero__title {
-  font-size: clamp(2.5rem, 7vw, var(--fs-5xl));
-  max-width: 12ch;
+  font-size: clamp(2.25rem, 5.2vw, var(--fs-4xl));
+  max-width: 20ch;
   color: var(--c-charcoal);
   /* Light halo, not a dark one: text is dark-on-light now, so a light
      shadow is what pushes an overlapping dark monogram edge away from the
