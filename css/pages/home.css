@@ -28,17 +28,28 @@
   text-shadow: 0 2px 16px rgba(243, 244, 246, 0.8);
 }
 
-.hero__actions {
+/* Actions + scroll cue used to live in separate flow: the cue was
+   absolutely positioned to a fixed distance from the hero's bottom edge
+   while the buttons sat in the centered flex column above it — at shorter
+   viewport heights the two could land on top of each other. Locked into one
+   row now so they're always aligned to each other, never independently
+   positioned. */
+.hero__actions-row {
   margin-top: var(--sp-7);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+}
+
+.hero__actions {
   display: flex;
   gap: var(--sp-4);
   flex-wrap: wrap;
 }
 
 .hero__scroll-cue {
-  position: absolute;
-  bottom: var(--sp-6);
-  left: var(--container-pad);
   display: flex;
   align-items: center;
   gap: var(--sp-3);
