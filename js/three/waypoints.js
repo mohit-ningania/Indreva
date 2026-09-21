@@ -70,6 +70,18 @@
  * page's resting position — that's the "single continuous path" the brief
  * calls for, rather than independent per-page scenes.
  * ============================================================================
+ *
+ * SCROLL-DRIVEN ANIMATION REMOVED (see scene.js module header): the mark is
+ * now set once to each page's `start`/`scaleStart`/`groupY.start`/
+ * `groupX.start` and held static while the page scrolls underneath it. Every
+ * `.end` value, `peakDispersion`, and `reassembleAt` below is currently
+ * inert — kept as-is (rather than stripped) so the earlier "assemble ->
+ * break apart -> reassemble" tuning isn't lost if that motion is ever
+ * reinstated. `camera.end` is still live for one thing: `travelTo` (scene.js)
+ * still tweens between pages, and the incoming page's `camera.start` /
+ * `monogram.scaleStart` / `groupY.start` / `groupX.start` are its landing
+ * values there.
+ * ============================================================================
  */
 
 export const WAYPOINTS = {

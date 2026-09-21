@@ -4,17 +4,28 @@
  * ============================================================================
  * One renderer/camera/monogram instance lives for the whole session (the
  * fake-SPA page-transition layer never tears this down, only calls
- * `travelTo()` on it). Two things drive every transform, both explained in
- * waypoints.js:
+ * `travelTo()` on it).
  *
- *   1. WITHIN a page   -> a scrubbed ScrollTrigger interpolates camera +
- *                         monogram between that page's `start`/`end`.
+ *   1. WITHIN a page   -> no scroll-linked camera/monogram animation at all.
+ *                         The mark is set once, to that page's waypoint at
+ *                         t=0 (see waypoints.js `camera.start`/`monogram
+ *                         .scaleStart`/etc.), and stays there — visually
+ *                         static in world space while the page's own content
+ *                         scrolls past it underneath (per owner feedback: the
+ *                         scroll-driven break-apart/travel motion read as
+ *                         distracting rather than interesting). The only
+ *                         motion left at rest is the always-running idle sway
+ *                         (see IDLE_SWAY_* below) applied in renderLoop.
+ *                         Exception: Vision's `bindVisionHorizontal` pinned
+ *                         section is a distinct content-navigation mechanic
+ *                         (it drives the horizontal stage carousel itself,
+ *                         not just decorative camera drift) and keeps its own
+ *                         scroll-linked camera/dispersion morph across its
+ *                         four stages.
  *   2. BETWEEN pages   -> `travelTo()` GSAP-tweens from the outgoing page's
- *                         `end` to the incoming page's `start`, timed to
- *                         match the DOM diagonal wipe in transitions.js.
- *
- * Nothing here is keyframed on a timer — every value is either "current
- * scroll fraction of this page" or "current transition progress".
+ *                         current (static) framing to the incoming page's
+ *                         `start`, timed to match the DOM diagonal wipe in
+ *                         transitions.js.
  * ============================================================================
  */
 import * as THREE from '../vendor/three.module.min.js';
@@ -25,7 +36,6 @@ import { capabilities } from '../core/device.js';
 let renderer, camera, scene, monogram, scrollRig;
 let clock;
 let currentPageKey = 'home';
-let pageScrollTrigger = null;
 let rafId = null;
 let isVisible = true;
 let gsapRef, ScrollTriggerRef;
@@ -185,16 +195,13 @@ function onResize() {
 
 /**
  * Sets camera + monogram to the waypoint's interpolated state at fraction t
- * (0..1) of the given page.
- *
- * The mark reads "assembled -> break apart -> reassembled" across every
- * page's own scroll, not a one-way scatter: dispersion follows a sine arc
- * (0 at t=0 and t=1, peaking at wp.monogram.peakDispersion around t=0.5)
- * instead of a straight lerp between two endpoints. groupY sinks the whole
- * mark down in world space as t -> 1, so by the time the page has scrolled
- * to its footer the reassembled mark is settled half behind the footer's
- * opaque background — the canvas itself never clips it; the footer's own
- * z-index (above the canvas, see layout.css) does that naturally.
+ * (0..1) of the given page. Every call site (initScene, bindScrollTrigger,
+ * the Vision-carousel handoff) now always passes t=0 — no scroll-linked
+ * animation drives this per-frame any more (see module header) — so in
+ * practice this just resolves each page's `start` framing. The interpolation
+ * by t is kept general rather than hardcoded to 0 so the function still
+ * reads correctly as "resolve this page's state at fraction t" if scroll-
+ * linked motion is ever reinstated.
  */
 // Normally a single sine hump: assembled at st=0 and st=1, most scattered at
 // the midpoint. A page can instead give monogram.reassembleAt a scroll
@@ -243,31 +250,23 @@ function applyPageWaypoint(pageKey, t) {
   monogram.material.envMapIntensity = lerp(envStart, wp.dimAtEnd, st);
 }
 
-/** Binds a scrubbed ScrollTrigger spanning the whole document for the active page. */
+/**
+ * Sets the camera + monogram to the page's resting (t=0) framing once, and
+ * leaves them there — no scroll-linked interpolation. See the module header
+ * for why (owner feedback: the scroll-driven motion read as distracting) and
+ * for the Vision-carousel exception.
+ */
 function bindScrollTrigger(pageKey) {
-  if (pageScrollTrigger) pageScrollTrigger.kill();
-  applyMaterialTone(pageKey); // page-level, not scroll-driven — set once per page, not per frame
-  pageScrollTrigger = ScrollTriggerRef.create({
-    trigger: document.body,
-    start: 'top top',
-    end: 'bottom bottom',
-    // Cinematic lag, but not so much that the camera visibly trails a fast
-    // flick — layered on top of Lenis's own smoothing, scrub:1 meant the
-    // mark kept drifting toward a stale target for a full second after the
-    // page had already settled, reading as sluggish rather than smooth.
-    scrub: 0.4,
-    onUpdate: (self) => {
-      if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
-      applyPageWaypoint(pageKey, self.progress);
-    },
-  });
+  applyMaterialTone(pageKey); // page-level — set once per page, not per frame
+  if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
+  applyPageWaypoint(pageKey, 0);
 }
 
 /**
  * Called by transitions.js right as a navigation begins. Tweens the camera
- * + monogram from the outgoing page's `end` state to the incoming page's
- * `start` state over `duration` seconds, then hands control back to a fresh
- * per-page ScrollTrigger for the new route.
+ * + monogram from the outgoing page's current (static, resting) framing to
+ * the incoming page's `start` state over `duration` seconds, then settles on
+ * that page's own resting framing for the new route (bindScrollTrigger).
  */
 export function travelTo(nextPageKey, duration = 0.6) {
   if (!camera) return Promise.resolve();
@@ -282,8 +281,13 @@ export function travelTo(nextPageKey, duration = 0.6) {
     // applyPageWaypoint) — the mark is always assembled at a page boundary.
     dispersion: 0,
     scale: monogram.group.scale.x,
-    groupY: fromWp.groupY.end,
-    groupX: (fromWp.groupX || { end: DEFAULT_GROUP_X }).end ?? DEFAULT_GROUP_X,
+    // Read live, not fromWp.groupY/groupX.end: the page no longer animates
+    // toward an "end" state while scrolled (see bindScrollTrigger) — the
+    // outgoing page's actual current position is always its own resting
+    // (start) framing. position.x is already aspect-adjusted (see
+    // groupXAspectFactor) since applyPageWaypoint wrote it that way.
+    groupY: monogram.group.position.y,
+    groupX: monogram.group.position.x,
   };
   const to = {
     pos: toWp.camera.start.position,
@@ -292,7 +296,10 @@ export function travelTo(nextPageKey, duration = 0.6) {
     dispersion: 0,
     scale: toWp.monogram.scaleStart,
     groupY: toWp.groupY.start,
-    groupX: (toWp.groupX || { start: DEFAULT_GROUP_X }).start ?? DEFAULT_GROUP_X,
+    // Pre-multiplied by the aspect factor here (once) so `from`/`to` are both
+    // plain world-space x values the onUpdate below can lerp directly,
+    // instead of re-applying the factor to an already-adjusted `from`.
+    groupX: ((toWp.groupX || { start: DEFAULT_GROUP_X }).start ?? DEFAULT_GROUP_X) * groupXAspectFactor(),
   };
 
   const fromColor = monogram.material.color.clone();
@@ -318,7 +325,7 @@ export function travelTo(nextPageKey, duration = 0.6) {
         currentDispersion = dispersion;
         monogram.group.scale.setScalar(lerp(from.scale, to.scale, proxy.t));
         monogram.group.position.y = lerp(from.groupY, to.groupY, proxy.t);
-        monogram.group.position.x = lerp(from.groupX, to.groupX, proxy.t) * groupXAspectFactor();
+        monogram.group.position.x = lerp(from.groupX, to.groupX, proxy.t);
         monogram.material.color.copy(fromColor).lerp(toColor, proxy.t);
       },
       onComplete: () => {
@@ -428,7 +435,9 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
     if (rawProgress >= 1 || rawProgress <= 0) {
       if (genericScrollSuspended) {
         setGenericScrollSuspended(false);
-        if (pageScrollTrigger) applyPageWaypoint(currentPageKey, pageScrollTrigger.progress);
+        // Generic per-page scroll is no longer animated (see bindScrollTrigger)
+        // — hand back to the page's static resting framing, not a live progress.
+        applyPageWaypoint(currentPageKey, 0);
       }
       return;
     }
