@@ -508,6 +508,21 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
   recalc();
   window.addEventListener('resize', recalc);
 
+  // Fraction of this section's own scroll progress spent easing in/out of
+  // the stage math at each end, instead of snapping straight to it. Before
+  // scroll-driven animation was removed everywhere else (see module
+  // header), the generic per-page scroll was still continuously
+  // interpolating the resting hero camera right up to this boundary, so by
+  // the time this section's pin engaged, camera z / dispersion had already
+  // drifted close to VISION_STAGES[0]'s own values — the handoff was smooth
+  // by construction. With that continuous interpolation gone, the resting
+  // hero framing is a flat, static camera.start (z 9.5, dispersion 0) that
+  // no longer arrives anywhere near stage 0's (z 5.5, dispersion 0.9), so
+  // crossing into/out of this section would otherwise SNAP the camera
+  // distance and instantly shatter/reassemble the mark in one frame.
+  // Blending across this window keeps that handoff continuous again.
+  const HANDOFF_EASE = 0.06;
+
   let queued = false;
   const update = () => {
     queued = false;
@@ -549,11 +564,27 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
     const a = VISION_STAGES[idx];
     const b = VISION_STAGES[idx + 1] || a;
 
-    const dispersion = lerp(a.dispersion, b.dispersion, localT);
+    let dispersion = lerp(a.dispersion, b.dispersion, localT);
+    let cameraZ = lerp(a.cameraZ, b.cameraZ, localT);
+    let rotationY = lerp(a.rotationY, b.rotationY, localT);
+
+    const restCam = getWaypoint(currentPageKey).camera;
+    if (progress < HANDOFF_EASE) {
+      const e = progress / HANDOFF_EASE;
+      dispersion = lerp(0, dispersion, e);
+      cameraZ = lerp(restCam.start.position[2], cameraZ, e);
+      rotationY = lerp(restCam.start.rotation[1], rotationY, e);
+    } else if (progress > 1 - HANDOFF_EASE) {
+      const e = (1 - progress) / HANDOFF_EASE;
+      dispersion = lerp(0, dispersion, e);
+      cameraZ = lerp(restCam.end.position[2], cameraZ, e);
+      rotationY = lerp(restCam.end.rotation[1], rotationY, e);
+    }
+
     applyDispersion(monogram.slabs, dispersion, DISPERSAL_REFERENCE_SCALE / monogram.group.scale.x);
     currentDispersion = dispersion;
-    camera.position.z = lerp(a.cameraZ, b.cameraZ, localT);
-    scrollRig.rotation.y = lerp(a.rotationY, b.rotationY, localT);
+    camera.position.z = cameraZ;
+    scrollRig.rotation.y = rotationY;
     camera.updateProjectionMatrix();
 
     onStageChange?.(Math.round(scaled));
