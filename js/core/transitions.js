@@ -4,15 +4,32 @@
  * only intercepts same-origin nav clicks so moving between pages doesn't
  * hard-reload, and choreographs the diagonal exit/enter wipe in lock-step
  * with the 3D camera's `travelTo()`.
+ *
+ * URLs are clean (no `.html`) — `/about`, `/vision`, etc., `/` for home —
+ * while the files fetched under the hood still carry their real extension
+ * (`about.html`, `vision.html`...). ROUTES is the one map between the two;
+ * `normalizePath` also accepts a legacy `.html` URL (an old bookmark, a
+ * shared link, `/about.html`) and resolves it to the same route, so those
+ * keep working rather than 404ing.
  */
 import { scrollToTopInstant } from './smooth-scroll.js';
 
-const PAGE_FILES = ['index.html', 'about.html', 'capabilities.html', 'why-indreva.html', 'vision.html', 'contact.html'];
+const ROUTES = {
+  '/': { file: 'index.html', key: 'home' },
+  '/about': { file: 'about.html', key: 'about' },
+  '/capabilities': { file: 'capabilities.html', key: 'capabilities' },
+  '/why-indreva': { file: 'why-indreva.html', key: 'why-indreva' },
+  '/vision': { file: 'vision.html', key: 'vision' },
+  '/contact': { file: 'contact.html', key: 'contact' },
+};
 
-function pathToPageKey(pathname) {
-  const file = pathname.split('/').pop() || 'index.html';
-  const name = file.replace('.html', '') || 'index';
-  return name === 'index' ? 'home' : name;
+/** '/about.html', '/about/', '/index.html' -> '/about' / '/about' / '/' — the ROUTES key form. */
+function normalizePath(pathname) {
+  let p = pathname;
+  if (p.endsWith('/index.html')) p = p.slice(0, -('index.html'.length)) || '/';
+  else if (p.endsWith('.html')) p = p.slice(0, -'.html'.length);
+  if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+  return p || '/';
 }
 
 function isInternalNavigable(anchor) {
@@ -21,9 +38,7 @@ function isInternalNavigable(anchor) {
   if (anchor.hasAttribute('download')) return false;
   const url = new URL(anchor.href, window.location.href);
   if (url.origin !== window.location.origin) return false;
-  const file = url.pathname.split('/').pop();
-  if (file && !PAGE_FILES.includes(file) && file !== '') return false;
-  return true;
+  return !!ROUTES[normalizePath(url.pathname)];
 }
 
 export function initTransitions(deps) {
@@ -106,14 +121,23 @@ export function initTransitions(deps) {
 
   async function navigate(url, pushHistory) {
     if (isTransitioning) return;
+
+    const targetUrl = new URL(url, window.location.href);
+    const cleanPath = normalizePath(targetUrl.pathname);
+    const route = ROUTES[cleanPath];
+    if (!route) {
+      window.location.href = url; // not one of ours — real navigation
+      return;
+    }
+
     isTransitioning = true;
     document.body.classList.add('is-transitioning');
 
-    const nextKey = pathToPageKey(new URL(url, window.location.href).pathname);
+    const nextKey = route.key;
 
     try {
       const [doc] = await Promise.all([
-        fetchPage(url),
+        fetchPage(route.file),
         exitAnimation().then(),
         travelTo ? travelTo(nextKey, TRANSITION_DURATION) : Promise.resolve(),
       ]);
@@ -129,7 +153,7 @@ export function initTransitions(deps) {
         scrollToTopInstant();
         window.scrollTo(0, 0);
 
-        if (pushHistory) window.history.pushState({ pageKey: nextKey }, '', url);
+        if (pushHistory) window.history.pushState({ pageKey: nextKey }, '', cleanPath + targetUrl.search + targetUrl.hash);
 
         onContentSwapped?.();
         refreshForPage?.(nextKey);
@@ -140,7 +164,7 @@ export function initTransitions(deps) {
         currentPageKey = nextKey;
       }
     } catch (err) {
-      window.location.href = url; // graceful degrade: real navigation
+      window.location.href = route.file; // graceful degrade: the real file always resolves, unlike the clean path on a host without rewrite support
       return;
     } finally {
       await enterAnimation();
@@ -156,7 +180,7 @@ export function initTransitions(deps) {
     if (!isInternalNavigable(anchor)) return;
 
     const url = new URL(anchor.href, window.location.href);
-    if (url.pathname === window.location.pathname) return; // same page — let hash/native handling occur
+    if (normalizePath(url.pathname) === normalizePath(window.location.pathname)) return; // same page — let hash/native handling occur
 
     e.preventDefault();
     navigate(anchor.href, true);

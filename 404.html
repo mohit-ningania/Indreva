@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indreva Trade Group</title>
+</head>
+<body>
+<script>
+/**
+ * GitHub Pages' custom-404 fallback for the site's clean URLs (see
+ * js/core/transitions.js ROUTES — this list must stay in sync with it).
+ * A direct load or hard refresh of /about, /vision, etc. hits this page
+ * (still HTTP 404, GitHub Pages has no rewrite rules), which then fetches
+ * the real file and swaps this document for it in place — the address bar
+ * keeps the clean URL throughout since no further navigation occurs, and
+ * once that real page's own scripts take over, in-app navigation proceeds
+ * through the normal SPA router.
+ */
+(function () {
+  var ROUTES = {
+    '/about': 'about.html',
+    '/capabilities': 'capabilities.html',
+    '/why-indreva': 'why-indreva.html',
+    '/vision': 'vision.html',
+    '/contact': 'contact.html',
+  };
+  function normalize(p) {
+    if (p.endsWith('/index.html')) p = p.slice(0, -'index.html'.length) || '/';
+    else if (p.endsWith('.html')) p = p.slice(0, -'.html'.length);
+    if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+    return p || '/';
+  }
+  var path = normalize(location.pathname);
+  var file = path === '/' ? 'index.html' : ROUTES[path];
+
+  if (!file) {
+    document.body.innerHTML = '<p style="font-family:sans-serif;padding:3rem;">Page not found. <a href="/">Go home</a>.</p>';
+    return;
+  }
+
+  fetch(file)
+    .then(function (res) {
+      if (!res.ok) throw new Error('fetch failed: ' + res.status);
+      return res.text();
+    })
+    .then(function (html) {
+      document.open();
+      document.write(html);
+      document.close();
+    })
+    .catch(function () {
+      document.body.innerHTML = '<p style="font-family:sans-serif;padding:3rem;">Page not found. <a href="/">Go home</a>.</p>';
+    });
+})();
+</script>
+</body>
+</html>
