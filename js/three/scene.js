@@ -262,9 +262,14 @@ function applyPageWaypoint(pageKey, t) {
  * -apart motion read as distracting, then that even a residual scroll-tied
  * rise wasn't wanted either — the mark should be fully still except for its
  * own idle sway) and for the Vision-carousel exception.
+ *
+ * Also owns the mark's per-page visibility: per owner request, the floating
+ * 3D monogram now only appears on the Vision page — every other page keeps
+ * just the header's flat logo (untouched by this) and no floating mark.
  */
 function bindScrollTrigger(pageKey) {
   applyMaterialTone(pageKey); // page-level — set once per page, not per frame
+  monogram.group.visible = pageKey === 'vision';
   if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
   applyPageWaypoint(pageKey, 0);
 }
@@ -314,6 +319,10 @@ export function travelTo(nextPageKey, duration = 0.6) {
 
   transitionState = { from, to };
   currentPageKey = nextPageKey;
+  // Switch the mark's visibility for the destination page right away — the
+  // diagonal wipe (transitions.js) covers the screen for the first stretch
+  // of this same tween, so the swap itself is never seen.
+  monogram.group.visible = nextPageKey === 'vision';
 
   return new Promise((resolve) => {
     const proxy = { t: 0 };
