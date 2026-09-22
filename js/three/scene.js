@@ -276,6 +276,11 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
   bindScrollTrigger(currentPageKey);
   startLoop();
 
+  // A webfont finishing its swap after this first layout (FOUT/FOIT) can
+  // change the title's actual rendered width out from under the clearance
+  // check bindScrollTrigger already ran above — re-check once loading settles.
+  document.fonts?.ready?.then(() => enforceHomeTextClearance());
+
   return { camera, scene, renderer };
 }
 
@@ -288,7 +293,74 @@ function onResize() {
   // window resize — so resizing without a reload left the mark's x position
   // stuck at whatever aspect ratio the page happened to load at, drifting
   // out of its clearance-tuned spot as the window changed shape.
-  if (!transitionState && !genericScrollSuspended) applyPageWaypoint(currentPageKey, 0);
+  if (!transitionState && !genericScrollSuspended) {
+    applyPageWaypoint(currentPageKey, 0);
+    enforceHomeTextClearance();
+  }
+}
+
+/**
+ * Home's groupX/scale (waypoints.js) are tuned against one measured render
+ * of the hero title — but real visitors render that text in whatever font
+ * their platform actually resolves the --font-display stack to (Satoshi if
+ * it loads, else a platform default that can be meaningfully wider or
+ * narrower), and static tuning kept getting invalidated by exactly that:
+ * fine on the font/widths this was checked against, overlapping on others.
+ * This instead measures the *actual* rendered title on every call and
+ * nudges the mark right only as far as that measurement says it needs to,
+ * rather than trusting a fixed number to hold across every font and width.
+ * Purely additive to applyPageWaypoint's own aspect-based position — never
+ * moves the mark left of where that already put it.
+ */
+const TEXT_CLEARANCE_MARGIN_PX = 56;
+const TEXT_CLEARANCE_MAX_SHIFT = 3; // world units — sanity cap, not expected to bind in practice
+function measureMarkMinScreenX() {
+  const box = new THREE.Box3().setFromObject(monogram.group);
+  const v = new THREE.Vector3();
+  let minX = Infinity;
+  for (let i = 0; i < 8; i++) {
+    v.set(
+      i & 1 ? box.max.x : box.min.x,
+      i & 2 ? box.max.y : box.min.y,
+      i & 4 ? box.max.z : box.min.z
+    ).project(camera);
+    minX = Math.min(minX, (v.x + 1) / 2 * window.innerWidth);
+  }
+  return minX;
+}
+function enforceHomeTextClearance() {
+  if (currentPageKey !== 'home' || !monogram.group.visible) return;
+  const words = document.querySelectorAll('.hero__title .split-word');
+  if (!words.length) return;
+  let textRight = 0;
+  words.forEach((w) => { textRight = Math.max(textRight, w.getBoundingClientRect().right); });
+  if (textRight <= 0) return; // not laid out yet (e.g. display:none mid-transition)
+
+  let totalShift = 0;
+
+  // Newton-ish steps rather than one shot: a perspective projection isn't
+  // linear, so a single small-nudge derivative undershoots when the actual
+  // needed shift turns out to be large (a big font/width mismatch) — a
+  // couple of re-measured steps converge on the real target instead of
+  // leaving a partial correction from extrapolating too far off one slope.
+  for (let i = 0; i < 4; i++) {
+    const minX = measureMarkMinScreenX();
+    const deficit = (textRight + TEXT_CLEARANCE_MARGIN_PX) - minX;
+    if (deficit <= 0) break; // clear
+
+    const EPS = 0.1;
+    monogram.group.position.x += EPS;
+    const minXNudged = measureMarkMinScreenX();
+    monogram.group.position.x -= EPS;
+
+    const pxPerUnit = (minXNudged - minX) / EPS;
+    if (!(pxPerUnit > 0)) break; // guard against a degenerate projection
+
+    const step = Math.min(deficit / pxPerUnit, TEXT_CLEARANCE_MAX_SHIFT - totalShift);
+    if (step <= 0) break; // hit the sanity cap
+    monogram.group.position.x += step;
+    totalShift += step;
+  }
 }
 
 /**
@@ -368,6 +440,7 @@ function bindScrollTrigger(pageKey) {
   updateCanvasLayout(pageKey); // before applyPageWaypoint: that reads the aspect this sets
   if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
   applyPageWaypoint(pageKey, 0);
+  enforceHomeTextClearance();
 }
 
 /**

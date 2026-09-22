@@ -1,10 +1,18 @@
 /**
  * Contact: client-side validation with inline errors and an animated
- * success state. No network submission target exists yet, so a valid
- * submit is treated as successfully queued and the form is replaced with
- * a confirmation — swap the fetch() stub in `submitEnquiry` for a real
- * endpoint when one exists.
+ * success state, submitting via EmailJS (loaded as a classic <script> in
+ * contact.html — see index.js of that SDK) straight from the browser to
+ * the owner's inbox, no backend of our own required.
+ *
+ * Fill these in from the EmailJS dashboard (emailjs.com) before this goes
+ * live: Account > General for PUBLIC_KEY, Email Services for SERVICE_ID,
+ * Email Templates for TEMPLATE_ID. The template's variables must match the
+ * keys FormData collects below: name, company, email, phone, requirement,
+ * quantity.
  */
+const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
 const VALIDATORS = {
   name: (v) => v.trim().length >= 2 || 'Enter your full name.',
   company: (v) => v.trim().length >= 2 || 'Enter your company name.',
@@ -33,10 +41,8 @@ function validateField(field) {
 }
 
 async function submitEnquiry(data) {
-  // Placeholder: no backend wired up yet. Simulated latency keeps the
-  // success animation honest about async submission.
-  await new Promise((resolve) => setTimeout(resolve, 700));
-  return { ok: true, data };
+  if (!window.emailjs) throw new Error('EmailJS SDK failed to load');
+  return window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data, EMAILJS_PUBLIC_KEY);
 }
 
 function handleSubmit(e) {
@@ -49,10 +55,13 @@ function handleSubmit(e) {
   }
 
   const submitBtn = form.querySelector('[type="submit"]');
+  const submitBtnOriginalHTML = submitBtn.innerHTML;
   submitBtn.disabled = true;
   submitBtn.textContent = 'Sending…';
 
   const formData = Object.fromEntries(new FormData(form).entries());
+  const errorEl = document.getElementById('contact-error');
+  if (errorEl) errorEl.style.display = 'none';
 
   submitEnquiry(formData).then(() => {
     const status = document.getElementById('contact-status');
@@ -65,6 +74,11 @@ function handleSubmit(e) {
         status.focus();
       },
     });
+  }).catch((err) => {
+    console.error('Enquiry submission failed:', err);
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = submitBtnOriginalHTML;
+    if (errorEl) errorEl.style.display = '';
   });
 }
 

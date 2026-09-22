@@ -202,6 +202,7 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
           <span>Thank you — your enquiry has been received. Our team will respond within one business day.</span>
         </div>
+        <p class="form-error" id="contact-error" role="alert" style="display:none; margin-top:var(--sp-4);">Something went wrong sending your enquiry. Please try again, or email us directly at <a href="mailto:info@indreva.in">info@indreva.in</a>.</p>
       </div>
 
     </div>
@@ -237,6 +238,7 @@
 
 <script src="js/vendor/gsap.min.js?v=20260922"></script>
 <script src="js/vendor/ScrollTrigger.min.js?v=20260922"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="module" src="js/main.js?v=20260922"></script>
 <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 </body>
