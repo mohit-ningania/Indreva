@@ -314,19 +314,23 @@ function onResize() {
  */
 const TEXT_CLEARANCE_MARGIN_PX = 56;
 const TEXT_CLEARANCE_MAX_SHIFT = 3; // world units — sanity cap, not expected to bind in practice
-function measureMarkMinScreenX() {
+const EDGE_CLIP_TOLERANCE_PX = 24; // small bleed off the right edge reads as intentional; more looks broken
+function measureMarkScreenX() {
   const box = new THREE.Box3().setFromObject(monogram.group);
   const v = new THREE.Vector3();
   let minX = Infinity;
+  let maxX = -Infinity;
   for (let i = 0; i < 8; i++) {
     v.set(
       i & 1 ? box.max.x : box.min.x,
       i & 2 ? box.max.y : box.min.y,
       i & 4 ? box.max.z : box.min.z
     ).project(camera);
-    minX = Math.min(minX, (v.x + 1) / 2 * window.innerWidth);
+    const sx = (v.x + 1) / 2 * window.innerWidth;
+    minX = Math.min(minX, sx);
+    maxX = Math.max(maxX, sx);
   }
-  return minX;
+  return { minX, maxX };
 }
 function enforceHomeTextClearance() {
   if (currentPageKey !== 'home' || !monogram.group.visible) return;
@@ -344,20 +348,25 @@ function enforceHomeTextClearance() {
   // couple of re-measured steps converge on the real target instead of
   // leaving a partial correction from extrapolating too far off one slope.
   for (let i = 0; i < 4; i++) {
-    const minX = measureMarkMinScreenX();
+    const { minX, maxX } = measureMarkScreenX();
     const deficit = (textRight + TEXT_CLEARANCE_MARGIN_PX) - minX;
     if (deficit <= 0) break; // clear
 
     const EPS = 0.1;
     monogram.group.position.x += EPS;
-    const minXNudged = measureMarkMinScreenX();
+    const nudged = measureMarkScreenX();
     monogram.group.position.x -= EPS;
 
-    const pxPerUnit = (minXNudged - minX) / EPS;
+    const pxPerUnit = (nudged.minX - minX) / EPS;
     if (!(pxPerUnit > 0)) break; // guard against a degenerate projection
 
-    const step = Math.min(deficit / pxPerUnit, TEXT_CLEARANCE_MAX_SHIFT - totalShift);
-    if (step <= 0) break; // hit the sanity cap
+    // Clearing the text is never worth pushing the mark visibly off the
+    // right edge — a small, deliberate-looking bleed is fine, but a large
+    // one just reads as broken. Cap the step there even if that leaves the
+    // clearance margin short; an imperfect gap beats an amputated mark.
+    const roomBeforeClip = (window.innerWidth + EDGE_CLIP_TOLERANCE_PX - maxX) / pxPerUnit;
+    const step = Math.min(deficit / pxPerUnit, TEXT_CLEARANCE_MAX_SHIFT - totalShift, Math.max(0, roomBeforeClip));
+    if (step <= 0) break; // hit the sanity cap or the edge
     monogram.group.position.x += step;
     totalShift += step;
   }
