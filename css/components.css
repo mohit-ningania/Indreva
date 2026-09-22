@@ -564,75 +564,264 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
   .nav-toggle { display: flex; }
 }
 
-/* ---- Photo feature ----
-   Real trade/logistics photography, paired directly with its own short copy
-   — never a caption pasted over a dark scrim. A flat, lightly-rounded tile
-   with almost no shadow (not a floating card) — the reference for this is
-   Apple's own numbered feature rows: quiet, not decorative. */
-.photo-feature {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: var(--sp-8);
-  align-items: center;
-}
-.photo-feature--reverse { grid-template-columns: 1fr 1.05fr; }
-.photo-feature--reverse .photo-feature__media { order: 2; }
+/* ==========================================================================
+   LAYERED MEDIA SYSTEM
+   Photography and type are composed together, not stacked in separate
+   boxes: an oversized ghost word sits behind the image, a second smaller
+   frame overlaps the first, and the copy column crosses the image edge.
+   The depth is real (z-index + scroll parallax, see initParallax in
+   js/core/reveal.js), which is what makes it read as dimensional rather
+   than as a photo dropped into a card.
+   ========================================================================== */
 
-.photo-feature__media {
+/* ---- Ghost display word ----
+   The oversized, barely-there word that sits behind a composition. Sized in
+   vw so it stays a background *texture* at any width rather than a heading
+   competing with the real one. */
+.ghost-type {
+  position: absolute;
+  z-index: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(3.5rem, 13vw, 12rem);
+  line-height: 0.82;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: rgba(46, 58, 70, 0.07);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
+
+/* ---- Layered feature ----
+   Ghost word + primary image + overlapping inset image + copy that crosses
+   the image edge. The 12-column grid lets the copy start *before* the image
+   ends, so the two interlock instead of sitting side by side. */
+.layer-feature {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: center;
+  column-gap: var(--sp-6);
+  isolation: isolate;
+  /* Headroom for the ghost word. Without it the image starts at the top of
+     the grid row and swallows the word whole, leaving a meaningless tail of
+     letters poking out past the frame. */
+  padding-top: var(--sp-8);
+  /* The ghost word is set nowrap at a vw-scaled size, so on a narrow screen
+     a long one ("ACCOUNTABLE") runs wider than the viewport and drags a
+     horizontal scrollbar onto the whole page. Clipping here contains it —
+     the bottom padding first gives the inset's overhang somewhere to live
+     inside this box, so the clip never eats it. */
+  padding-bottom: var(--sp-9);
+  overflow: hidden;
+}
+.layer-feature__ghost { top: 0; left: -0.04em; }
+
+.layer-feature__stack {
+  position: relative;
+  z-index: 1;
+  grid-column: 1 / span 7;
+  grid-row: 1;
+}
+.layer-feature--reverse .layer-feature__stack { grid-column: 6 / span 7; }
+
+.layer-feature__media {
+  margin: 0;
   border-radius: 20px;
   overflow: hidden;
   aspect-ratio: 4 / 3;
-  box-shadow: 0 1px 2px rgba(28, 33, 38, 0.05);
+  box-shadow: 0 40px 80px -44px rgba(28, 33, 38, 0.55);
 }
-.photo-feature__media img {
+.layer-feature__media--portrait { aspect-ratio: 3 / 4; }
+.layer-feature__media img,
+.layer-feature__inset img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.photo-feature__eyebrow { color: var(--accent-label); }
-.photo-feature__title {
+/* The overlapping second frame — the single strongest depth cue here. The
+   border is the page surface itself, so the inset reads as lifted off the
+   image beneath rather than composited into it.
+   It always hangs off the side *away* from the copy column: overlapping
+   toward the copy puts a raised frame straight through the body text. */
+.layer-feature__inset {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  width: 36%;
+  aspect-ratio: 3 / 4;
+  left: 5%;
+  bottom: -16%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 6px solid var(--surface-bg);
+  box-shadow: 0 30px 60px -28px rgba(28, 33, 38, 0.6);
+}
+.layer-feature--reverse .layer-feature__inset {
+  left: auto;
+  right: 5%;
+}
+
+.layer-feature__copy {
+  position: relative;
+  z-index: 3;
+  grid-column: 8 / span 5;
+  grid-row: 1;
+}
+.layer-feature--reverse .layer-feature__copy { grid-column: 1 / span 5; }
+
+/* A portrait photograph at 7 columns is over 1000px tall on a wide screen —
+   it swallows the ghost word and squeezes the copy into a 5-line column.
+   Narrow the frame and hand the width back to the text. */
+.layer-feature--narrow .layer-feature__stack { grid-column: 1 / span 5; }
+.layer-feature--narrow .layer-feature__copy { grid-column: 7 / span 6; }
+
+.layer-feature__title {
   margin-top: var(--sp-3);
-  font-size: clamp(1.4rem, 2.4vw, var(--fs-2xl));
+  font-size: clamp(1.5rem, 2.8vw, var(--fs-2xl));
   color: var(--c-charcoal);
   max-width: 20ch;
 }
-.photo-feature__body {
+.layer-feature__body {
   margin-top: var(--sp-4);
   color: var(--c-deep-blue-grey);
   font-size: var(--fs-md);
-  max-width: 32rem;
 }
 
-@media (max-width: 860px) {
-  .photo-feature, .photo-feature--reverse {
-    grid-template-columns: 1fr;
-    gap: var(--sp-5);
+@media (max-width: 900px) {
+  .layer-feature { grid-template-columns: 1fr; row-gap: var(--sp-7); }
+  .layer-feature__stack,
+  .layer-feature--reverse .layer-feature__stack,
+  .layer-feature__copy,
+  .layer-feature--reverse .layer-feature__copy {
+    grid-column: 1 / -1;
+    grid-row: auto;
   }
-  .photo-feature--reverse .photo-feature__media { order: 0; }
-  .photo-feature__media { aspect-ratio: 4 / 3; }
+  .layer-feature__inset { width: 34%; right: -4%; bottom: -10%; border-width: 4px; }
+  .layer-feature--reverse .layer-feature__inset { left: -4%; }
 }
 
-/* ---- Photo showcase ----
-   A single large image with room to breathe — lightly rounded, no drop
-   shadow, no overlay. Used where the photo already carries its own visual
-   weight (a branded wordmark baked in, or simply strong enough to stand
-   alone). */
-.photo-showcase {
-  border-radius: 20px;
+/* ---- Media hero ----
+   The headline lives *on* the photograph, at display scale — the image is
+   the surface the type is set on, not an illustration beside it. The veil
+   is an even full-frame darkening rather than a bottom band, so it reads
+   cinematic instead of like a caption strip. */
+.media-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 74svh;
+  border-radius: 24px;
   overflow: hidden;
+  isolation: isolate;
 }
-.photo-showcase img {
+.media-hero__img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Two crossed gradients, not one band: the vertical one seats the whole
+   frame, the horizontal one builds a bed under the text column specifically
+   so the headline never has to fight a bright patch of the photograph while
+   the rest of the image stays open. */
+.media-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to right, rgba(28, 33, 38, 0.72) 0%, rgba(28, 33, 38, 0.3) 42%, rgba(28, 33, 38, 0) 72%),
+    linear-gradient(to top, rgba(28, 33, 38, 0.72) 0%, rgba(28, 33, 38, 0.3) 52%, rgba(28, 33, 38, 0.12) 100%);
+}
+.media-hero__inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: var(--sp-8) var(--sp-7);
+}
+.media-hero__eyebrow { color: var(--c-ice-blue); }
+.media-hero__title {
+  margin-top: var(--sp-4);
+  font-size: clamp(2rem, 5vw, var(--fs-3xl));
+  line-height: 1.02;
+  color: var(--c-platinum-white);
+  max-width: 18ch;
+}
+.media-hero__body {
+  margin-top: var(--sp-5);
+  max-width: 40rem;
+  color: var(--c-chrome-silver);
+  font-size: var(--fs-md);
+}
+
+@media (max-width: 640px) {
+  .media-hero { min-height: 68svh; }
+  .media-hero__inner { padding: var(--sp-6) var(--sp-5); }
+}
+
+/* ---- Photo mosaic ----
+   Several frames at deliberately different scales and baselines, with a
+   copy column threaded between them. The staggered bottom margins are the
+   point: a flush row of equal tiles reads as a stock-photo grid. */
+.photo-mosaic {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--sp-5);
+  align-items: end;
+  isolation: isolate;
+  padding-top: var(--sp-8);
+  overflow: hidden; /* contains the nowrap ghost word — see .layer-feature */
+}
+.photo-mosaic__ghost { top: 0; right: 0; }
+
+.photo-mosaic figure {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -36px rgba(28, 33, 38, 0.45);
+}
+.photo-mosaic figure img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  aspect-ratio: 16 / 9;
 }
-.photo-showcase--tall img { aspect-ratio: 4 / 5; }
 
-@media (max-width: 640px) {
-  .photo-showcase img,
-  .photo-showcase--tall img { aspect-ratio: 4 / 5; }
+.photo-mosaic__tall { grid-column: span 4; aspect-ratio: 3 / 4; }
+.photo-mosaic__lift { margin-bottom: var(--sp-8) !important; }
+.photo-mosaic__wide { grid-column: span 5; aspect-ratio: 4 / 3; }
+.photo-mosaic__copy {
+  position: relative;
+  z-index: 2;
+  grid-column: span 3;
+  padding-bottom: var(--sp-4);
+}
+.photo-mosaic__title {
+  font-size: clamp(1.3rem, 2.2vw, var(--fs-xl));
+  color: var(--c-charcoal);
+  margin-top: var(--sp-3);
+}
+.photo-mosaic__body {
+  margin-top: var(--sp-4);
+  color: var(--c-deep-blue-grey);
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 900px) {
+  .photo-mosaic { grid-template-columns: repeat(6, 1fr); }
+  .photo-mosaic__tall { grid-column: span 3; }
+  .photo-mosaic__wide { grid-column: span 6; }
+  .photo-mosaic__copy { grid-column: span 6; padding-bottom: 0; }
+  .photo-mosaic__lift { margin-bottom: 0 !important; }
 }

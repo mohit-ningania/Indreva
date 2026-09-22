@@ -26,17 +26,17 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="css/variables.css?v=11">
-<link rel="stylesheet" href="css/base.css?v=11">
-<link rel="stylesheet" href="css/layout.css?v=11">
-<link rel="stylesheet" href="css/components.css?v=11">
-<link rel="stylesheet" href="css/animations.css?v=11">
-<link rel="stylesheet" href="css/pages/home.css?v=11">
-<link rel="stylesheet" href="css/pages/about.css?v=11">
-<link rel="stylesheet" href="css/pages/capabilities.css?v=11">
-<link rel="stylesheet" href="css/pages/why-indreva.css?v=11">
-<link rel="stylesheet" href="css/pages/vision.css?v=11">
-<link rel="stylesheet" href="css/pages/contact.css?v=11">
+<link rel="stylesheet" href="css/variables.css?v=16">
+<link rel="stylesheet" href="css/base.css?v=16">
+<link rel="stylesheet" href="css/layout.css?v=16">
+<link rel="stylesheet" href="css/components.css?v=16">
+<link rel="stylesheet" href="css/animations.css?v=16">
+<link rel="stylesheet" href="css/pages/home.css?v=16">
+<link rel="stylesheet" href="css/pages/about.css?v=16">
+<link rel="stylesheet" href="css/pages/capabilities.css?v=16">
+<link rel="stylesheet" href="css/pages/why-indreva.css?v=16">
+<link rel="stylesheet" href="css/pages/vision.css?v=16">
+<link rel="stylesheet" href="css/pages/contact.css?v=16">
 
 <script type="application/ld+json">
 {
@@ -193,9 +193,22 @@
   </section>
 
   <section class="chapter container">
-    <figure class="photo-showcase" data-reveal>
-      <img src="assets/photos/port-container-lift.jpg?v=11" alt="Container branded with the Indreva Trade Group mark being lifted at a port, with the tagline Sourcing, Trading, Exports, Worldwide" loading="lazy" decoding="async">
-    </figure>
+    <div class="layer-feature">
+      <p class="ghost-type layer-feature__ghost" aria-hidden="true" data-parallax="6">Worldwide</p>
+      <div class="layer-feature__stack">
+        <figure class="layer-feature__media" data-reveal data-parallax="-3">
+          <img src="assets/photos/delivery-trucks-dock.jpg?v=16" alt="Indreva Trade Group delivery trucks loading at a warehouse dock" loading="lazy" decoding="async">
+        </figure>
+        <figure class="layer-feature__inset" data-parallax="-9">
+          <img src="assets/photos/port-container-lift.jpg?v=16" alt="Container branded with the Indreva Trade Group mark being lifted at a port" loading="lazy" decoding="async">
+        </figure>
+      </div>
+      <div class="layer-feature__copy" data-reveal>
+        <p class="eyebrow" style="color:var(--accent-label)">On the Ground</p>
+        <h2 class="layer-feature__title">Material moves. Paperwork keeps up.</h2>
+        <p class="layer-feature__body">Consignments tracked from supplier floor to your dock, with the documentation filed correctly the first time — across every state we serve.</p>
+      </div>
+    </div>
   </section>
 
   <section class="chapter vision-teaser" aria-labelledby="vision-teaser-heading">
@@ -237,9 +250,9 @@
   </div>
 </footer>
 
-<script src="js/vendor/gsap.min.js?v=11"></script>
-<script src="js/vendor/ScrollTrigger.min.js?v=11"></script>
-<script type="module" src="js/main.js?v=11"></script>
+<script src="js/vendor/gsap.min.js?v=16"></script>
+<script src="js/vendor/ScrollTrigger.min.js?v=16"></script>
+<script type="module" src="js/main.js?v=16"></script>
 <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

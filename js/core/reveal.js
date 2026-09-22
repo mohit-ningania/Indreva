@@ -15,7 +15,7 @@
  * and swaps every translate+fade for an opacity-only fade with no
  * movement, per the brief's "fall back to simple fades" requirement.
  */
-import { capabilities } from './device.js?v=11';
+import { capabilities } from './device.js?v=16';
 
 export function splitWords(el) {
   if (el.dataset.split === 'done') return el.querySelectorAll('.split-word');
@@ -120,6 +120,37 @@ export function initReveals(gsap, ScrollTrigger) {
   });
 
   document.querySelectorAll('[data-split-headline]').forEach((el) => revealHeadline(el, gsap));
+  initParallax(gsap);
+}
+
+/**
+ * Scroll parallax for the layered media compositions (components.css).
+ * Each [data-parallax] element drifts by its own factor as its section
+ * crosses the viewport, so the ghost word, the main image and the
+ * overlapping inset all travel at different rates — that difference is
+ * what reads as depth. `scrub: true` ties it to scroll position rather
+ * than playing it as a timed animation, so it tracks the finger/wheel
+ * exactly and never runs on after the user stops.
+ *
+ * Skipped entirely under reduced-motion: parallax is pure movement, so
+ * there's nothing to degrade it to.
+ */
+function initParallax(gsap) {
+  if (capabilities.reducedMotion) return;
+  document.querySelectorAll('[data-parallax]').forEach((el) => {
+    const distance = parseFloat(el.dataset.parallax) || 0;
+    if (!distance) return;
+    gsap.fromTo(el, { yPercent: distance }, {
+      yPercent: -distance,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: el.closest('section') || el,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: true,
+      },
+    });
+  });
 }
 
 /** Called after a page swap, before the old ScrollTriggers for that content are gone. */

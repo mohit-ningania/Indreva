@@ -26,17 +26,17 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="css/variables.css?v=11">
-<link rel="stylesheet" href="css/base.css?v=11">
-<link rel="stylesheet" href="css/layout.css?v=11">
-<link rel="stylesheet" href="css/components.css?v=11">
-<link rel="stylesheet" href="css/animations.css?v=11">
-<link rel="stylesheet" href="css/pages/home.css?v=11">
-<link rel="stylesheet" href="css/pages/about.css?v=11">
-<link rel="stylesheet" href="css/pages/capabilities.css?v=11">
-<link rel="stylesheet" href="css/pages/why-indreva.css?v=11">
-<link rel="stylesheet" href="css/pages/vision.css?v=11">
-<link rel="stylesheet" href="css/pages/contact.css?v=11">
+<link rel="stylesheet" href="css/variables.css?v=16">
+<link rel="stylesheet" href="css/base.css?v=16">
+<link rel="stylesheet" href="css/layout.css?v=16">
+<link rel="stylesheet" href="css/components.css?v=16">
+<link rel="stylesheet" href="css/animations.css?v=16">
+<link rel="stylesheet" href="css/pages/home.css?v=16">
+<link rel="stylesheet" href="css/pages/about.css?v=16">
+<link rel="stylesheet" href="css/pages/capabilities.css?v=16">
+<link rel="stylesheet" href="css/pages/why-indreva.css?v=16">
+<link rel="stylesheet" href="css/pages/vision.css?v=16">
+<link rel="stylesheet" href="css/pages/contact.css?v=16">
 
 <script type="application/ld+json">
 {
@@ -165,14 +165,20 @@
   </section>
 
   <section class="chapter container" style="padding-block:var(--sp-7);">
-    <div class="photo-feature">
-      <figure class="photo-feature__media" data-reveal>
-        <img src="assets/photos/quality-assurance-floor.jpg?v=11" alt="An Indreva quality assurance associate inspecting stock in a warehouse aisle, beside a wall-mounted Quality Assurance sign carrying the Indreva mark" loading="lazy" decoding="async">
-      </figure>
-      <div data-reveal>
-        <p class="eyebrow photo-feature__eyebrow">In the Field</p>
-        <h3 class="photo-feature__title">Checked at every stage, not assumed at the end</h3>
-        <p class="photo-feature__body">Quality assurance isn't a final sign-off — it's a standing presence on the floor, verifying stock against spec before it ever ships.</p>
+    <div class="layer-feature">
+      <p class="ghost-type layer-feature__ghost" aria-hidden="true" data-parallax="6">Verified</p>
+      <div class="layer-feature__stack">
+        <figure class="layer-feature__media" data-reveal data-parallax="-3">
+          <img src="assets/photos/quality-assurance-floor.jpg?v=16" alt="A quality assurance associate inspecting stock in a warehouse aisle" loading="lazy" decoding="async">
+        </figure>
+        <figure class="layer-feature__inset" data-parallax="-9">
+          <img src="assets/photos/warehouse-handover.jpg?v=16" alt="Palletised goods being checked at a warehouse handover" loading="lazy" decoding="async">
+        </figure>
+      </div>
+      <div class="layer-feature__copy" data-reveal>
+        <p class="eyebrow" style="color:var(--accent-label)">In the Field</p>
+        <h3 class="layer-feature__title">Checked at every stage, not assumed at the end</h3>
+        <p class="layer-feature__body">Quality assurance isn't a final sign-off — it's a standing presence on the floor, verifying stock against spec before it ever ships.</p>
       </div>
     </div>
   </section>
@@ -210,14 +216,20 @@
   </section>
 
   <section class="chapter container" style="padding-block:var(--sp-7);">
-    <div class="photo-feature photo-feature--reverse">
-      <figure class="photo-feature__media" data-reveal>
-        <img src="assets/photos/delivery-trucks-dock.jpg?v=11" alt="Indreva Trade Group delivery trucks loading at a warehouse dock" loading="lazy" decoding="async">
-      </figure>
-      <div data-reveal>
-        <p class="eyebrow photo-feature__eyebrow">On the Road</p>
-        <h3 class="photo-feature__title">On schedule, across every state we serve</h3>
-        <p class="photo-feature__body">Tracked consignments and schedule-first planning, so delivery dates hold even when manufacturing timelines don't move.</p>
+    <div class="layer-feature layer-feature--reverse">
+      <p class="ghost-type layer-feature__ghost" aria-hidden="true" style="left:auto; right:-0.04em;" data-parallax="6">Delivered</p>
+      <div class="layer-feature__stack">
+        <figure class="layer-feature__media" data-reveal data-parallax="-3">
+          <img src="assets/photos/cartons-conveyor.jpg?v=16" alt="Cartons moving along a warehouse conveyor line" loading="lazy" decoding="async">
+        </figure>
+        <figure class="layer-feature__inset" data-parallax="-9">
+          <img src="assets/photos/gate-documentation.jpg?v=16" alt="Consignment paperwork at a loading gate as a container truck departs" loading="lazy" decoding="async">
+        </figure>
+      </div>
+      <div class="layer-feature__copy" data-reveal>
+        <p class="eyebrow" style="color:var(--accent-label)">On the Road</p>
+        <h3 class="layer-feature__title">On schedule, across every state we serve</h3>
+        <p class="layer-feature__body">Tracked consignments and schedule-first planning, so delivery dates hold even when manufacturing timelines don't move.</p>
       </div>
     </div>
   </section>
@@ -258,9 +270,9 @@
   </div>
 </footer>
 
-<script src="js/vendor/gsap.min.js?v=11"></script>
-<script src="js/vendor/ScrollTrigger.min.js?v=11"></script>
-<script type="module" src="js/main.js?v=11"></script>
+<script src="js/vendor/gsap.min.js?v=16"></script>
+<script src="js/vendor/ScrollTrigger.min.js?v=16"></script>
+<script type="module" src="js/main.js?v=16"></script>
 <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
