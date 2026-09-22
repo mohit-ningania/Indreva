@@ -15,7 +15,7 @@
  * and swaps every translate+fade for an opacity-only fade with no
  * movement, per the brief's "fall back to simple fades" requirement.
  */
-import { capabilities } from './device.js?v=8';
+import { capabilities } from './device.js?v=9';
 
 export function splitWords(el) {
   if (el.dataset.split === 'done') return el.querySelectorAll('.split-word');

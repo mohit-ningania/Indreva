@@ -563,3 +563,48 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
   .nav-links, .primary-nav .btn--accent.header-cta { display: none; }
   .nav-toggle { display: flex; }
 }
+
+/* ---- Photo band ----
+   Real trade/logistics photography, used sparingly as a change of pace
+   between text-driven chapters. Sharp corners throughout, like every other
+   card in this system — a thin border and a bottom scrim carry an optional
+   caption instead of a rounded frame. */
+.photo-band {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--border-on-light);
+  background: var(--c-steel-grey);
+}
+.photo-band img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(28, 33, 38, 0.6) 0%, rgba(28, 33, 38, 0) 42%);
+  pointer-events: none;
+}
+.photo-band__caption {
+  position: absolute;
+  left: var(--sp-6);
+  right: var(--sp-6);
+  bottom: var(--sp-5);
+  color: var(--c-platinum-white);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.01em;
+  max-width: 36rem;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+.photo-band--tall { aspect-ratio: 3 / 4; }
+
+@media (max-width: 640px) {
+  .photo-band { aspect-ratio: 4 / 5; }
+  .photo-band--tall { aspect-ratio: 4 / 5; }
+}
