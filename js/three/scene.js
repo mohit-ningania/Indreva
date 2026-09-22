@@ -32,10 +32,10 @@
  *                         transitions.js.
  * ============================================================================
  */
-import * as THREE from '../vendor/three.module.min.js?v=9';
-import { createMonogram, applyDispersion } from './monogram.js?v=9';
-import { getWaypoint, VISION_STAGES } from './waypoints.js?v=9';
-import { capabilities } from '../core/device.js?v=9';
+import * as THREE from '../vendor/three.module.min.js?v=10';
+import { createMonogram, applyDispersion } from './monogram.js?v=10';
+import { getWaypoint, VISION_STAGES } from './waypoints.js?v=10';
+import { capabilities } from '../core/device.js?v=10';
 
 let renderer, camera, scene, monogram, scrollRig;
 let clock;

@@ -47,7 +47,7 @@ function loadEmailJS() {
   if (!emailjsReady) {
     emailjsReady = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'js/vendor/emailjs.min.js?v=9';
+      script.src = 'js/vendor/emailjs.min.js?v=10';
       script.onload = resolve;
       script.onerror = () => { emailjsReady = null; reject(new Error('EmailJS SDK failed to load')); };
       document.head.appendChild(script);

@@ -7,32 +7,32 @@
  *
  * CACHE-BUSTING: every local CSS <link>/JS <script> tag and every internal
  * import specifier across the whole site carries a shared `?v=N` query
- * string (currently 9) — GitHub Pages sets no explicit Cache-Control, so
+ * string (currently 10) — GitHub Pages sets no explicit Cache-Control, so
  * without it a returning visitor's browser can serve a stale cached copy
  * of any of these files indefinitely, silently, with no way to tell from
  * the outside that they're not seeing the current code. This bit us for
  * real: several real fixes shipped invisibly to anyone who'd already
  * loaded the site once, because the version string never changed between
  * commits. ANY edit to a CSS or JS file (not HTML markup/content changes)
- * needs `v=9` bumped everywhere in the same commit — every occurrence,
+ * needs `v=10` bumped everywhere in the same commit — every occurrence,
  * across all 6 HTML files and every internal import — or the fix won't
  * actually reach anyone with a warm cache.
  */
-import { capabilities, canUseWebGLScene } from './core/device.js?v=9';
-import { initSmoothScroll } from './core/smooth-scroll.js?v=9';
-import { initCursor } from './core/cursor.js?v=9';
-import { initNav, initScrollProgress, markActiveLink } from './core/nav.js?v=9';
-import { initReveals, clearRevealTriggers } from './core/reveal.js?v=9';
-import { initTransitions } from './core/transitions.js?v=9';
-import { initMailtoCopy } from './core/toast.js?v=9';
-import { initFallback, initFlowyVideo } from './three/fallback.js?v=9';
+import { capabilities, canUseWebGLScene } from './core/device.js?v=10';
+import { initSmoothScroll } from './core/smooth-scroll.js?v=10';
+import { initCursor } from './core/cursor.js?v=10';
+import { initNav, initScrollProgress, markActiveLink } from './core/nav.js?v=10';
+import { initReveals, clearRevealTriggers } from './core/reveal.js?v=10';
+import { initTransitions } from './core/transitions.js?v=10';
+import { initMailtoCopy } from './core/toast.js?v=10';
+import { initFallback, initFlowyVideo } from './three/fallback.js?v=10';
 
-import * as homePage from './pages/home.js?v=9';
-import * as aboutPage from './pages/about.js?v=9';
-import * as capabilitiesPage from './pages/capabilities.js?v=9';
-import * as whyIndrevaPage from './pages/why-indreva.js?v=9';
-import * as visionPage from './pages/vision.js?v=9';
-import * as contactPage from './pages/contact.js?v=9';
+import * as homePage from './pages/home.js?v=10';
+import * as aboutPage from './pages/about.js?v=10';
+import * as capabilitiesPage from './pages/capabilities.js?v=10';
+import * as whyIndrevaPage from './pages/why-indreva.js?v=10';
+import * as visionPage from './pages/vision.js?v=10';
+import * as contactPage from './pages/contact.js?v=10';
 
 const PAGE_MODULES = {
   home: homePage,
@@ -68,7 +68,7 @@ async function boot() {
   // their own (no per-frame JS needed for them at all).
   if (canUseWebGLScene()) {
     try {
-      sceneModule = await import('./three/scene.js?v=9');
+      sceneModule = await import('./three/scene.js?v=10');
       await sceneModule.initScene({
         gsap, ScrollTrigger,
         canvas: document.getElementById('scene-canvas'),
