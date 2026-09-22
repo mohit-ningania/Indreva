@@ -12,7 +12,7 @@
  * shared link, `/about.html`) and resolves it to the same route, so those
  * keep working rather than 404ing.
  */
-import { scrollToTopInstant } from './smooth-scroll.js?v=16';
+import { scrollToTopInstant } from './smooth-scroll.js?v=17';
 
 const ROUTES = {
   '/': { file: 'index.html', key: 'home' },
@@ -59,8 +59,22 @@ export function initTransitions(deps) {
   let currentPageKey = document.body.dataset.page || 'home';
   let isTransitioning = false;
 
+  /**
+   * `cache: 'no-cache'` is load-bearing, not belt-and-braces. GitHub Pages
+   * serves HTML with no Cache-Control header, so the browser caches these
+   * documents heuristically — and unlike every CSS/JS asset, an HTML file
+   * has no `?v=N` to bust (see the note in main.js). That meant a visitor
+   * who had the site open from an earlier deploy would SPA-navigate into a
+   * stale copy of the page: old markup swapped in under current CSS, so the
+   * new sections rendered broken until a hard refresh. 'no-cache' forces a
+   * revalidation each time — still a cheap 304 when nothing changed, but
+   * never silently stale.
+   */
   async function fetchPage(url) {
-    const res = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
+    const res = await fetch(url, {
+      cache: 'no-cache',
+      headers: { 'X-Requested-With': 'fetch' },
+    });
     if (!res.ok) throw new Error('Navigation fetch failed: ' + res.status);
     const html = await res.text();
     return new DOMParser().parseFromString(html, 'text/html');

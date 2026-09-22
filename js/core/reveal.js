@@ -15,7 +15,7 @@
  * and swaps every translate+fade for an opacity-only fade with no
  * movement, per the brief's "fall back to simple fades" requirement.
  */
-import { capabilities } from './device.js?v=16';
+import { capabilities } from './device.js?v=17';
 
 export function splitWords(el) {
   if (el.dataset.split === 'done') return el.querySelectorAll('.split-word');
@@ -121,6 +121,29 @@ export function initReveals(gsap, ScrollTrigger) {
 
   document.querySelectorAll('[data-split-headline]').forEach((el) => revealHeadline(el, gsap));
   initParallax(gsap);
+  refreshOnImageLoad(ScrollTrigger);
+}
+
+/**
+ * Triggers are measured against the layout as it stands when they're
+ * created. Photography is lazy-loaded and the frames are sized by
+ * aspect-ratio, so that's usually stable — but any image that lands late
+ * and does shift the page leaves every trigger below it measured against
+ * stale positions, which strands content that should have revealed. One
+ * refresh once the images have settled re-measures them all.
+ */
+function refreshOnImageLoad(ScrollTrigger) {
+  const pending = [...document.querySelectorAll('#page-content img')].filter((img) => !img.complete);
+  if (!pending.length) return;
+  let left = pending.length;
+  const done = () => {
+    left -= 1;
+    if (left <= 0) ScrollTrigger.refresh();
+  };
+  pending.forEach((img) => {
+    img.addEventListener('load', done, { once: true });
+    img.addEventListener('error', done, { once: true });
+  });
 }
 
 /**
@@ -128,9 +151,16 @@ export function initReveals(gsap, ScrollTrigger) {
  * Each [data-parallax] element drifts by its own factor as its section
  * crosses the viewport, so the ghost word, the main image and the
  * overlapping inset all travel at different rates — that difference is
- * what reads as depth. `scrub: true` ties it to scroll position rather
- * than playing it as a timed animation, so it tracks the finger/wheel
- * exactly and never runs on after the user stops.
+ * what reads as depth.
+ *
+ * Never put [data-parallax] on an element that also carries [data-reveal]:
+ * both compile to the same CSS transform, and the two tweens then overwrite
+ * each other every frame — visibly, as a shake while the element enters the
+ * viewport. Parallax goes on the inner <img>, the reveal on its <figure>.
+ *
+ * The small `scrub` number rather than `true` lets the tween ease toward
+ * the scroll position over ~0.6s instead of snapping to it each frame,
+ * which absorbs the jitter of coarse wheel deltas.
  *
  * Skipped entirely under reduced-motion: parallax is pure movement, so
  * there's nothing to degrade it to.
@@ -147,7 +177,7 @@ function initParallax(gsap) {
         trigger: el.closest('section') || el,
         start: 'top bottom',
         end: 'bottom top',
-        scrub: true,
+        scrub: 0.6,
       },
     });
   });

@@ -636,6 +636,26 @@ body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
   box-shadow: 0 40px 80px -44px rgba(28, 33, 38, 0.55);
 }
 .layer-feature__media--portrait { aspect-ratio: 3 / 4; }
+
+/* An image that carries its own parallax translates *inside* a frame that
+   clips it, so it has to be taller than the frame or the travel exposes a
+   strip of background at one edge. 118% with a -9% offset keeps it centred
+   and covers the ±7% of frame height the largest factor here moves it.
+   Parallax lives on the <img> rather than the <figure> on purpose: the
+   figure already carries the [data-reveal] entrance tween, and two GSAP
+   tweens writing transform on one element fight frame by frame — which
+   showed up as the image visibly shaking as it entered the viewport. */
+.layer-feature__media img[data-parallax],
+.photo-mosaic figure img[data-parallax] {
+  position: relative;
+  top: -9%;
+  height: 118%;
+}
+.media-hero__img[data-parallax] {
+  top: -9%;
+  height: 118%;
+}
+
 .layer-feature__media img,
 .layer-feature__inset img {
   width: 100%;

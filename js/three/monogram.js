@@ -8,7 +8,7 @@
  * transform and a DISPERSAL vector/rotation used by the scroll rig to
  * separate/reassemble the mark.
  */
-import * as THREE from '../vendor/three.module.min.js?v=16';
+import * as THREE from '../vendor/three.module.min.js?v=17';
 
 // Same coordinate space as assets/favicons/mark.svg (viewBox 0 0 104 104).
 // Edit these points to reshape the mark — keep favicon/wordmark SVGs in sync.
