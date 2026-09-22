@@ -372,6 +372,30 @@ body[data-page="vision"] #page-content .btn:hover {
   pointer-events: none;
   visibility: hidden;
 }
+
+/* ---- Toast (mailto click-to-copy confirmation, see js/core/toast.js) ---- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--sp-7);
+  z-index: var(--z-cursor); /* above everything but the custom cursor */
+  padding: var(--sp-4) var(--sp-6);
+  border-radius: 999px;
+  background: var(--c-charcoal);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity var(--dur-fast) var(--ease-out-soft), transform var(--dur-fast) var(--ease-out-soft);
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
 .transition-overlay__panel {
   position: absolute;
   inset: -10% -10%;

@@ -11,6 +11,7 @@ import { initCursor } from './core/cursor.js?v=20260922';
 import { initNav, initScrollProgress, markActiveLink } from './core/nav.js?v=20260922';
 import { initReveals, clearRevealTriggers } from './core/reveal.js?v=20260922';
 import { initTransitions } from './core/transitions.js?v=20260922';
+import { initMailtoCopy } from './core/toast.js?v=20260922';
 import { initFallback, initFlowyVideo } from './three/fallback.js?v=20260922';
 
 import * as homePage from './pages/home.js?v=20260922';
@@ -39,6 +40,7 @@ async function boot() {
   initCursor(gsap);
   initNav(gsap);
   initScrollProgress();
+  initMailtoCopy();
   await initSmoothScroll(gsap, ScrollTrigger);
   initReveals(gsap, ScrollTrigger);
 
