@@ -50,20 +50,21 @@
   z-index: var(--z-canvas-bg);
   pointer-events: none;
   overflow: hidden;
-  background: var(--surface-bg);
+  /* A plain, mostly-flat gradient between two brand tokens (still no raw
+     hex outside variables.css) — replaced the drifting blurred-blob
+     backdrop below per reviewer feedback: it read as a "spray"/cloud
+     effect and too blue for a B2B trading site. --surface-bg-shade flips
+     per page the same way --surface-bg already does (see base.css). */
+  background: linear-gradient(165deg, var(--surface-bg) 0%, var(--surface-bg) 55%, var(--surface-bg-shade) 130%);
   transition: background var(--dur-slow) var(--ease-precision);
 }
 
-/* ---- Flowy blobs ----
-   Large, heavily blurred colour fields drifting on independent slow loops.
-   Pure CSS transform/opacity animation — no canvas, no per-frame JS cost.
-   Tones flip to the dark palette on body[data-page="vision"] below. */
+/* ---- Flowy blobs (disabled) ----
+   Left in the DOM (all 6 pages reference these divs) but visually retired
+   in favour of the plain gradient on #scene-fallback above — kept as CSS
+   rather than removing the markup from every page for an inert div. */
 .flowy-bg__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(min(9vw, 90px));
-  opacity: 0.55;
-  will-change: transform;
+  display: none;
 }
 
 .flowy-bg__blob--1 {
@@ -200,6 +201,19 @@ main {
 }
 
 .site-header.is-condensed::before {
+  inset: 0;
+  background: rgba(243, 244, 246, 0.88);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--border-on-light);
+}
+
+/* Vision's dark hero cancels out most of the fade's effect before it's
+   scrolled — the "calm frame" reads as barely-there instead, with nav text
+   and the active-page state hard to make out (reviewer feedback). Force
+   the solid, blurred treatment on this one page from the start, rather
+   than only once .is-condensed kicks in. */
+body[data-page="vision"] .site-header::before {
   inset: 0;
   background: rgba(243, 244, 246, 0.88);
   backdrop-filter: blur(14px) saturate(140%);

@@ -111,7 +111,13 @@
   transform: scale(1);
 }
 
-.nav-links a[aria-current="page"] { color: var(--c-deep-blue-grey); }
+/* The active-page pill needs to read clearly at a glance, not just as a
+   slightly-darker hover state (reviewer feedback: couldn't tell which nav
+   item was current). Its own background is stronger than the hover-only
+   state above, plus a bolder weight, so it stays legible even without the
+   pointer sitting on it. */
+.nav-links a[aria-current="page"]::before { background: rgba(46, 58, 70, 0.13); }
+.nav-links a[aria-current="page"] { color: var(--c-deep-blue-grey); font-weight: 700; }
 
 /* ---- Buttons ----
    Solid-fill pills. The fill itself stays flat and solid at rest — a
@@ -211,6 +217,29 @@ body[data-page="vision"] #page-content .btn:hover {
 
 .btn__arrow { transition: transform var(--dur-fast) var(--ease-out-soft); }
 .btn:hover .btn__arrow { transform: translate(3px, -3px); }
+
+/* The header's own "Request a Quote" is the same action as the hero's, but
+   persistent — visible on every page, every scroll position — so it reads
+   as a secondary, always-available entry point rather than a second copy
+   of the hero's primary CTA (reviewer feedback: the two looked identical).
+   Smaller and outlined instead of solid; the header bar is always the
+   light treatment now (see .site-header::before), including on Vision, so
+   this single light/ghost styling is correct everywhere. */
+.header-cta.btn {
+  padding: var(--sp-3) var(--sp-5);
+  font-size: var(--fs-2xs);
+  min-height: 38px;
+  background: transparent;
+  color: var(--c-charcoal);
+  border-color: var(--border-on-light);
+}
+.header-cta.btn::before { display: none; }
+.header-cta.btn:hover {
+  background: transparent;
+  border-color: var(--c-deep-blue-grey);
+  color: var(--c-deep-blue-grey);
+  box-shadow: none;
+}
 
 /* ---- Mobile nav toggle ---- */
 .nav-toggle {

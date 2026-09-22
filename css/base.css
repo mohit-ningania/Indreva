@@ -39,6 +39,7 @@ body[data-page="vision"] {
   --surface-border: var(--surface-border-dark);
   --surface-card-bg: rgba(184, 188, 194, 0.06);
   --accent-label: var(--c-ice-blue);
+  --surface-bg-shade: var(--c-deep-blue-grey);
 }
 
 /* Lenis applies transform to this wrapper; keep it a plain block */

@@ -32,10 +32,10 @@
  *                         transitions.js.
  * ============================================================================
  */
-import * as THREE from '../vendor/three.module.min.js?v=20260922';
-import { createMonogram, applyDispersion } from './monogram.js?v=20260922';
-import { getWaypoint, VISION_STAGES } from './waypoints.js?v=20260922';
-import { capabilities } from '../core/device.js?v=20260922';
+import * as THREE from '../vendor/three.module.min.js?v=8';
+import { createMonogram, applyDispersion } from './monogram.js?v=8';
+import { getWaypoint, VISION_STAGES } from './waypoints.js?v=8';
+import { capabilities } from '../core/device.js?v=8';
 
 let renderer, camera, scene, monogram, scrollRig;
 let clock;
@@ -450,6 +450,17 @@ function bindScrollTrigger(pageKey) {
   if (transitionState || genericScrollSuspended) return; // another driver owns the camera right now
   applyPageWaypoint(pageKey, 0);
   enforceHomeTextClearance();
+  if (pageKey === 'home') {
+    // Defensive re-checks, not a fix for a confirmed bug — measuring showed
+    // the title's own entrance tween (yPercent+rotateZ, js/core/reveal.js)
+    // barely moves textRight in practice (its transform is vertical, this
+    // measures the horizontal edge). Kept anyway since re-running an
+    // idempotent, cheap check costs nothing and guards against any other
+    // source of late layout shift (a slower device, a future animation
+    // change) without needing to hook into the tween itself.
+    setTimeout(enforceHomeTextClearance, 600);
+    setTimeout(enforceHomeTextClearance, 1400);
+  }
 }
 
 /**

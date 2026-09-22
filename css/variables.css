@@ -39,6 +39,11 @@
 
   /* ---- Default surface (the light theme) ---- */
   --surface-bg: var(--c-platinum-white);
+  /* Second stop for #scene-fallback's background gradient (layout.css) —
+     reviewer feedback called the old drifting blurred-blob backdrop a
+     "spray"/cloud effect and too blue; this keeps the same brand tokens
+     but composes them into one plain, mostly-flat gradient instead. */
+  --surface-bg-shade: var(--c-chrome-silver);
   --surface-text: var(--c-charcoal);
   --surface-text-strong: var(--c-deep-blue-grey);
   /* Steel Grey on Platinum White is ~3:1 — fails WCAG AA for small text.
