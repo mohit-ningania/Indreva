@@ -12,7 +12,7 @@
  * shared link, `/about.html`) and resolves it to the same route, so those
  * keep working rather than 404ing.
  */
-import { scrollToTopInstant } from './smooth-scroll.js?v=21';
+import { scrollToTopInstant } from './smooth-scroll.js?v=25';
 
 const ROUTES = {
   '/': { file: 'index.html', key: 'home' },
@@ -181,7 +181,22 @@ export function initTransitions(deps) {
       window.location.href = route.file; // graceful degrade: the real file always resolves, unlike the clean path on a host without rewrite support
       return;
     } finally {
+      // enterAnimation() starts the incoming content at autoAlpha 0 —
+      // visibility:hidden, opacity:0 — and tweens it back in. So if that
+      // tween never lands (a stalled GSAP ticker, a throw mid-timeline) the
+      // whole page is left blank with no way back except a manual reload.
+      // This watchdog makes that unrecoverable state impossible: it costs
+      // nothing in the normal case, where the tween has long since set these
+      // properties itself.
+      const settle = setTimeout(() => {
+        const incoming = document.getElementById('page-content');
+        if (!incoming) return;
+        incoming.style.removeProperty('visibility');
+        incoming.style.removeProperty('opacity');
+        incoming.style.removeProperty('transform');
+      }, 1500);
       await enterAnimation();
+      clearTimeout(settle);
       document.body.classList.remove('is-transitioning');
       isTransitioning = false;
     }

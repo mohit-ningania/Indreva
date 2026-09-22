@@ -10,11 +10,17 @@
 
 .reveal.is-ready { transition: opacity var(--dur-slow) var(--ease-out-soft), transform var(--dur-slow) var(--ease-out-soft); }
 
-/* No-JS / pre-hydration fallback: never trap content invisible */
+/* Never trap content invisible. Two ways that can happen: JS never ran at
+   all, or a reveal's ScrollTrigger measured against a layout that has since
+   moved and so never fires (see guardAgainstStuckReveals in reveal.js).
+   Deliberately not scoped to `.reveal` — the guard also applies it to the
+   individual `.split-word` spans of a headline, which never carry that
+   class. */
 .no-js .reveal,
-.reveal.reveal--fallback {
-  opacity: 1;
-  transform: none;
+.reveal--fallback {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
 }
 
 .split-word,

@@ -15,7 +15,7 @@
  * and swaps every translate+fade for an opacity-only fade with no
  * movement, per the brief's "fall back to simple fades" requirement.
  */
-import { capabilities } from './device.js?v=21';
+import { capabilities } from './device.js?v=25';
 
 export function splitWords(el) {
   if (el.dataset.split === 'done') return el.querySelectorAll('.split-word');
@@ -122,7 +122,8 @@ export function initReveals(gsap, ScrollTrigger) {
   document.querySelectorAll('[data-split-headline]').forEach((el) => revealHeadline(el, gsap));
   initParallax(gsap);
   initCanvasHandoff(gsap);
-  refreshOnImageLoad(ScrollTrigger);
+  refreshOnLayoutSettled(ScrollTrigger);
+  guardAgainstStuckReveals();
 }
 
 /**
@@ -159,25 +160,112 @@ function initCanvasHandoff(gsap) {
 }
 
 /**
- * Triggers are measured against the layout as it stands when they're
- * created. Photography is lazy-loaded and the frames are sized by
- * aspect-ratio, so that's usually stable — but any image that lands late
- * and does shift the page leaves every trigger below it measured against
- * stale positions, which strands content that should have revealed. One
- * refresh once the images have settled re-measures them all.
+ * ScrollTrigger measures every trigger's start/end ONCE, against the layout
+ * as it stands when the trigger is created. Anything that reflows the page
+ * afterwards leaves every trigger below the reflow pointing at coordinates
+ * that no longer exist — and since a reveal starts at opacity 0 and is only
+ * brought in by its trigger, that content stays invisible until something
+ * forces a re-measure. A manual page reload was doing that by hand.
+ *
+ * The big offender is webfonts. Each page loads IBM Plex, Michroma and
+ * Satoshi with `display=swap`, so text paints in a fallback first and then
+ * re-renders in the real face at a different height, shifting everything
+ * below it. That lands well after these triggers are built.
+ *
+ * So: re-measure whenever the layout can have moved under them.
  */
-function refreshOnImageLoad(ScrollTrigger) {
-  const pending = [...document.querySelectorAll('#page-content img')].filter((img) => !img.complete);
-  if (!pending.length) return;
-  let left = pending.length;
-  const done = () => {
-    left -= 1;
-    if (left <= 0) ScrollTrigger.refresh();
-  };
-  pending.forEach((img) => {
-    img.addEventListener('load', done, { once: true });
-    img.addEventListener('error', done, { once: true });
+function refreshOnLayoutSettled(ScrollTrigger) {
+  const refresh = () => ScrollTrigger.refresh();
+
+  // Webfonts — the reflow that caused this.
+  document.fonts?.ready?.then(refresh).catch(() => {});
+
+  // Each image as it lands, not once they all have: the photography is
+  // lazy-loaded, so images below the fold don't load until they're scrolled
+  // to. Waiting for the whole set meant the refresh usually never ran at all.
+  document.querySelectorAll('#page-content img').forEach((img) => {
+    if (img.complete) return;
+    img.addEventListener('load', refresh, { once: true });
+    img.addEventListener('error', refresh, { once: true });
   });
+
+  // Anything else that settles late (late CSS, the 3D canvas sizing itself).
+  window.addEventListener('load', refresh, { once: true });
+}
+
+/**
+ * Last line of defence, and the reason this exists: a `.reveal` element
+ * starts at opacity 0 and is brought back ONLY by its ScrollTrigger. So any
+ * way that trigger can fail — a stale measurement, a refresh that didn't
+ * land, an exception earlier in setup — doesn't degrade the animation, it
+ * leaves real content permanently invisible. That is the worst failure mode
+ * this file has, and it is exactly the "I have to refresh to see the page"
+ * symptom. animations.css already states the principle for the no-JS case
+ * via `.reveal--fallback`; this enforces it at runtime too.
+ *
+ * Deliberately built on IntersectionObserver rather than another
+ * ScrollTrigger or a scroll handler: the observer resolves visibility from
+ * the browser's own layout, so it cannot inherit the stale-coordinate bug
+ * it is here to cover for. If an element has been on screen for a moment
+ * and is still fully transparent, its reveal is never coming — show it.
+ *
+ * In the healthy case this never fires: the trigger has already played and
+ * opacity is 1 long before the grace period elapses.
+ */
+const REVEAL_GRACE_MS = 900;
+
+/** The observer for the page currently in the DOM; replaced on each swap. */
+let revealGuard = null;
+
+function guardAgainstStuckReveals() {
+  if (!('IntersectionObserver' in window)) return;
+
+  const show = (el) => {
+    el.classList.add('reveal--fallback');
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('visibility');
+    el.style.removeProperty('transform');
+  };
+
+  const pending = new WeakMap();
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const el = entry.target;
+      if (!entry.isIntersecting) {
+        clearTimeout(pending.get(el));
+        pending.delete(el);
+        return;
+      }
+      if (pending.has(el)) return;
+      pending.set(el, setTimeout(() => {
+        pending.delete(el);
+        if (!el.isConnected) return;
+        if (parseFloat(getComputedStyle(el).opacity) > 0.01) return;
+        // GSAP holds the hidden state in inline styles, which outrank the
+        // fallback class — clear them so it can take effect.
+        show(el);
+        // A split headline is animated word by word by revealHeadline, so
+        // its spans hold their own hidden state independently of the element
+        // the trigger is attached to. Clearing only the wrapper leaves the
+        // heading a blank gap.
+        el.querySelectorAll('.split-word, .split-char').forEach(show);
+        observer.unobserve(el);
+      }, REVEAL_GRACE_MS));
+    });
+  }, {
+    /* The guard must never fire while a reveal is still legitimately
+       pending, or it replaces the entrance animation with a pop-in. The
+       reveals start at `top 90%` of the viewport, so an element sitting just
+       below that line is correctly still hidden — but a plain intersection
+       test counts it as on screen. Pulling the observer's bottom edge up by
+       30% makes it strictly later than the trigger it is covering for: by
+       the time this sees an element, its reveal is long overdue. */
+    rootMargin: '0px 0px -30% 0px',
+  });
+
+  document.querySelectorAll('#page-content [data-reveal]').forEach((el) => observer.observe(el));
+  revealGuard?.disconnect();
+  revealGuard = observer;
 }
 
 /**
