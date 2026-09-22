@@ -12,7 +12,7 @@
 
 .hero__title {
   font-size: clamp(2.25rem, 5.2vw, var(--fs-4xl));
-  max-width: 26ch;
+  max-width: 20ch;
   color: var(--c-charcoal);
   /* Light halo, not a dark one: text is dark-on-light now, so a light
      shadow is what pushes an overlapping dark monogram edge away from the

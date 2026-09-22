@@ -91,21 +91,30 @@ export const WAYPOINTS = {
       start: { position: [0, 0.1, 5.2], rotation: [0, 0, 0], fov: 42 },
       end: { position: [0, -0.3, 4.5], rotation: [0, 0, 0], fov: 44 },
     },
-    // Scale/groupX re-tuned after widening .hero__title's max-width (12ch ->
-    // 26ch, home.css) so "Creating Opportunities." stops force-wrapping mid-
-    // phrase: the wider allowed line reaches further right before wrapping,
-    // so the old groupX=1.7/scale~0.7 (tuned against the narrower wrap) no
-    // longer cleared it. Shrunk the mark and pushed it out further instead
-    // of just nudging groupX, since a straight push-right at the old scale
-    // ran the mark almost fully off-screen at ordinary desktop widths.
-    // Verified against actual rendered glyph bounds (not the .hero__title
-    // box) from 900px up through 2560px — clearance stays positive with a
-    // safety margin (not just != 0) since real font-stack fallbacks
-    // (`-apple-system`/San Francisco on Mac vs Linux's sans-serif fallback)
-    // render noticeably wider than what any one dev machine measures here.
-    monogram: { peakDispersion: 0.35, scaleStart: 0.6, scaleEnd: 0.5 },
+    // Scale halved from an earlier 1.35/1.1 and groupX pushed out —
+    // measured against the hero title's actual rendered text (not its
+    // containing element, which can be wider than the glyphs) at 1440px:
+    // the old size/position had the assembled mark sitting directly over
+    // "Opportunities." at t=0. Bumped back up ~15% and shifted further
+    // right afterward (per owner feedback the mark read too small/central)
+    // — re-verified against the same hero text and edge-safe down to 1024px.
+    //
+    // Later widening .hero__title's max-width (20ch -> 26ch, home.css) to
+    // stop "Creating Opportunities." force-wrapping mid-phrase caused a real
+    // overlap regression: the wider line reached further right than this
+    // groupX/scale had ever been cleared against. Reverted that width
+    // change rather than re-tuning this to chase it — a dense reload-per-
+    // viewport sweep (every ~60px, 900-2600px, several aspect ratios,
+    // measuring the title's actual rendered glyph bounds, not the box) found
+    // groupX=1.7/scale~0.7 clears the text with a 100px+ margin through
+    // 20ch, and that 22ch+ is where it starts failing. See splitWords
+    // (js/core/reveal.js) for the other half of that fix: the wrap is now
+    // also locked to this title's authored line breaks, so a wide-enough
+    // window can no longer pull words across the <br> into one much longer
+    // combined line than either original line alone.
+    monogram: { peakDispersion: 0.35, scaleStart: 0.776, scaleEnd: 0.6325 },
     groupY: { start: 0, end: -0.4 },
-    groupX: { start: 2.9, end: 2.9 },
+    groupX: { start: 1.7, end: 1.7 },
     ambientRotationSpeed: 0.09,
     dimAtEnd: 0.6,
   },

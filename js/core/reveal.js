@@ -19,18 +19,29 @@ import { capabilities } from './device.js';
 
 export function splitWords(el) {
   if (el.dataset.split === 'done') return el.querySelectorAll('.split-word');
-  // Preserve intentional <br> line breaks as word boundaries before reading
-  // textContent, which would otherwise silently glue the surrounding words
-  // together (e.g. "Markets.<br>Creating" -> "Markets.Creating").
   const temp = document.createElement('div');
   temp.innerHTML = el.innerHTML.replace(/<br\s*\/?>/gi, ' ');
-  const text = temp.textContent.trim().replace(/\s+/g, ' ');
-  el.setAttribute('aria-label', text);
+  el.setAttribute('aria-label', temp.textContent.trim().replace(/\s+/g, ' '));
   el.dataset.split = 'done';
-  const words = text.split(' ');
-  el.innerHTML = words
-    .map((w) => `<span class="split-word" aria-hidden="true">${w}</span>`)
-    .join(' ');
+  // Each <br> becomes its own block-level `.split-line`, so an author's
+  // intentional line break stays fixed regardless of viewport width. Left
+  // as a plain space (the old behaviour), the browser's own word-wrap
+  // decides line groupings on its own — which combination of words lands
+  // on which line then shifts around at different widths, so a wide-enough
+  // window can pull an extra word onto what was meant to be a short first
+  // line and push it much further right than any single source line alone
+  // (e.g. "Connecting Markets. Creating" instead of just "Connecting
+  // Markets.") — exactly the gap a fixed layout (like the floating 3D mark
+  // beside this title) can't defend against.
+  const lines = el.innerHTML.split(/<br\s*\/?>/gi);
+  el.innerHTML = lines
+    .map((line) => {
+      const lineEl = document.createElement('div');
+      lineEl.innerHTML = line;
+      const words = lineEl.textContent.trim().replace(/\s+/g, ' ').split(' ').filter(Boolean);
+      return `<span class="split-line">${words.map((w) => `<span class="split-word" aria-hidden="true">${w}</span>`).join(' ')}</span>`;
+    })
+    .join('');
   return el.querySelectorAll('.split-word');
 }
 

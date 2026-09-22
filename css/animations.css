@@ -23,6 +23,11 @@
   will-change: transform, opacity;
 }
 
+/* One per source <br> — keeps an author's intentional line break fixed
+   instead of letting the browser's own word-wrap re-decide it (see
+   splitWords in js/core/reveal.js). */
+.split-line { display: block; }
+
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1 !important; transform: none !important; }
 }

@@ -282,7 +282,13 @@ export async function initScene({ gsap, ScrollTrigger, canvas, initialPage }) {
 function onResize() {
   if (!renderer) return;
   monogram.group.visible = isMonogramVisibleFor(currentPageKey);
-  updateCanvasLayout(currentPageKey);
+  updateCanvasLayout(currentPageKey); // before applyPageWaypoint: that reads the aspect this sets
+  // groupX (and scale/groupY) are aspect-dependent (groupXAspectFactor) but
+  // were only ever recomputed on page load/transition, not on a plain
+  // window resize — so resizing without a reload left the mark's x position
+  // stuck at whatever aspect ratio the page happened to load at, drifting
+  // out of its clearance-tuned spot as the window changed shape.
+  if (!transitionState && !genericScrollSuspended) applyPageWaypoint(currentPageKey, 0);
 }
 
 /**
