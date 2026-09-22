@@ -643,8 +643,10 @@ body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
 
 /* An image that carries its own parallax translates *inside* a frame that
    clips it, so it has to be taller than the frame or the travel exposes a
-   strip of background at one edge. 118% with a -9% offset keeps it centred
-   and covers the ±7% of frame height the largest factor here moves it.
+   strip of background at one edge. The budget: yPercent is a share of the
+   image's own height, so a factor of N moves it N × 1.30 % of the frame —
+   15% of overhang each side covers every factor up to ~11, which is the
+   largest in use (-10 on the mosaic).
    Parallax lives on the <img> rather than the <figure> on purpose: the
    figure already carries the [data-reveal] entrance tween, and two GSAP
    tweens writing transform on one element fight frame by frame — which
@@ -652,12 +654,12 @@ body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
 .layer-feature__media img[data-parallax],
 .photo-mosaic figure img[data-parallax] {
   position: relative;
-  top: -9%;
-  height: 118%;
+  top: -15%;
+  height: 130%;
 }
 .media-hero__img[data-parallax] {
-  top: -9%;
-  height: 118%;
+  top: -15%;
+  height: 130%;
 }
 
 .layer-feature__media img,
@@ -719,161 +721,34 @@ body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
   }
 }
 
-/* ---- Clickable photography ----
-   Every framed photo opens full size (js/core/lightbox.js). The frames crop
-   and overlap by design, so this is how a viewer sees a whole photograph.
+/* ---- Photo hover ----
+   Every framed photo warms slightly under the pointer.
 
-   The hover treatment deliberately animates `filter` and `box-shadow` and
-   NOT `transform`: these figures carry the [data-reveal] entrance tween and
-   their images carry [data-parallax], so both transform channels already
-   belong to GSAP — a CSS transition sharing that property is exactly what
-   made these images shake on scroll. The inset frame above is the one
-   element with no GSAP on it, which is why it alone can lift. */
-[data-lightbox] {
-  cursor: pointer;
-  transition: box-shadow var(--dur-base) var(--ease-precision);
-}
-[data-lightbox] img {
-  transition: filter var(--dur-base) var(--ease-precision);
-}
-[data-lightbox]:hover img,
-[data-lightbox]:focus-visible img {
-  filter: brightness(1.07) saturate(1.06);
-}
-[data-lightbox]:hover {
-  box-shadow: 0 46px 82px -34px rgba(28, 33, 38, 0.62);
-}
-[data-lightbox]:focus-visible {
-  outline: 2px solid var(--c-deep-blue-grey);
-  outline-offset: 3px;
-}
-
-/* The expand cue. Sits inside the frame's own clip, so it reads as part of
-   the photograph rather than furniture floating beside it. */
-[data-lightbox]::after {
-  content: '';
-  position: absolute;
-  right: var(--sp-4);
-  bottom: var(--sp-4);
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  background-color: rgba(28, 33, 38, 0.55);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F3F4F6' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 19px 19px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  opacity: 0;
-  transform: scale(0.85);
-  transition: opacity var(--dur-base) var(--ease-precision),
-              transform var(--dur-base) var(--ease-out-soft);
-  pointer-events: none;
-}
-[data-lightbox]:hover::after,
-[data-lightbox]:focus-visible::after {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* No hover on touch, so the cue is the only thing telling a visitor these
-   are tappable — show it at rest there instead of waiting for a pointer. */
-@media (hover: none) {
-  [data-lightbox]::after { opacity: 0.9; transform: scale(1); }
-}
-
-/* The mosaic and layer frames are the positioning context for the cue. */
+   Deliberately animates `filter` and `box-shadow` and NOT `transform`:
+   these figures carry the [data-reveal] entrance tween and their images
+   carry [data-parallax], so both transform channels already belong to
+   GSAP — a CSS transition sharing that property is exactly what made these
+   images shake on scroll. The inset frame above is the one element with no
+   GSAP on it, which is why it alone can lift. */
 .photo-mosaic figure,
 .layer-feature__media,
-.layer-feature__inset-frame { position: relative; }
-
-/* ---- Lightbox ---- */
-.lightbox {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity var(--dur-base) var(--ease-precision);
+.layer-feature__inset-frame {
+  position: relative;
+  transition: box-shadow var(--dur-base) var(--ease-precision);
 }
-.lightbox.is-open { opacity: 1; }
-.lightbox::backdrop {
-  background: rgba(15, 18, 21, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+.photo-mosaic figure img,
+.layer-feature__media img,
+.layer-feature__inset-frame img {
+  transition: filter var(--dur-base) var(--ease-precision);
 }
-
-.lightbox__figure {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-4);
-  padding: var(--sp-7) var(--sp-6);
+.photo-mosaic figure:hover img,
+.layer-feature__media:hover img,
+.layer-feature__inset-frame:hover img {
+  filter: brightness(1.07) saturate(1.06);
 }
-.lightbox__img {
-  max-width: min(100%, 1400px);
-  max-height: 82vh;
-  object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 0.8);
-  transform: scale(0.97);
-  transition: transform var(--dur-slow) var(--ease-out-soft);
-}
-.lightbox.is-open .lightbox__img { transform: scale(1); }
-
-.lightbox__caption {
-  max-width: 60ch;
-  text-align: center;
-  font-size: var(--fs-sm);
-  color: var(--c-chrome-silver);
-}
-
-.lightbox__close {
-  position: absolute;
-  top: var(--sp-5);
-  right: var(--sp-5);
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  border: 1px solid var(--border-on-dark);
-  background: rgba(28, 33, 38, 0.6);
-  color: var(--c-platinum-white);
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-precision),
-              border-color var(--dur-fast) var(--ease-precision);
-}
-.lightbox__close:hover {
-  background: rgba(28, 33, 38, 0.9);
-  border-color: var(--c-ice-blue);
-}
-.lightbox__close:focus-visible {
-  outline: 2px solid var(--c-ice-blue);
-  outline-offset: 3px;
-}
-
-@media (max-width: 640px) {
-  .lightbox__figure { padding: var(--sp-8) var(--sp-4) var(--sp-5); }
-  .lightbox__img { max-height: 72vh; }
-  [data-lightbox]::after { width: 32px; height: 32px; background-size: 16px 16px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lightbox, .lightbox__img { transition: none; }
-  .lightbox__img { transform: none; }
+.photo-mosaic figure:hover,
+.layer-feature__media:hover {
+  box-shadow: 0 46px 82px -34px rgba(28, 33, 38, 0.62);
 }
 
 .layer-feature__copy {
