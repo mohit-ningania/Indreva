@@ -566,8 +566,9 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
 
 /* ---- Photo feature ----
    Real trade/logistics photography, paired directly with its own short copy
-   — never a caption pasted over a dark scrim. Rounded card + soft shadow so
-   the photo reads as a floating object on the page, not a banner strip. */
+   — never a caption pasted over a dark scrim. A flat, lightly-rounded tile
+   with almost no shadow (not a floating card) — the reference for this is
+   Apple's own numbered feature rows: quiet, not decorative. */
 .photo-feature {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
@@ -578,10 +579,10 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
 .photo-feature--reverse .photo-feature__media { order: 2; }
 
 .photo-feature__media {
-  border-radius: 28px;
+  border-radius: 20px;
   overflow: hidden;
   aspect-ratio: 4 / 3;
-  box-shadow: 0 40px 70px -36px rgba(28, 33, 38, 0.3);
+  box-shadow: 0 1px 2px rgba(28, 33, 38, 0.05);
 }
 .photo-feature__media img {
   width: 100%;
@@ -614,13 +615,13 @@ body[data-page="vision"] .transition-overlay__panel { background: var(--c-charco
 }
 
 /* ---- Photo showcase ----
-   A single large image with room to breathe — rounded, shadowed, no
-   overlay. Used where the photo already carries its own visual weight
-   (a branded wordmark baked in, or simply strong enough to stand alone). */
+   A single large image with room to breathe — lightly rounded, no drop
+   shadow, no overlay. Used where the photo already carries its own visual
+   weight (a branded wordmark baked in, or simply strong enough to stand
+   alone). */
 .photo-showcase {
-  border-radius: 28px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 50px 90px -40px rgba(28, 33, 38, 0.32);
 }
 .photo-showcase img {
   width: 100%;
