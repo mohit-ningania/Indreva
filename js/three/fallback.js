@@ -13,7 +13,7 @@
  *                        the CSS blobs underneath keep showing, no error
  *                        handling required.
  */
-import { capabilities } from '../core/device.js';
+import { capabilities } from '../core/device.js?v=20260922';
 
 export function initFallback() {
   document.getElementById('scene-canvas')?.remove();

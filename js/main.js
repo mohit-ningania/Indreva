@@ -5,20 +5,20 @@
  * `canUseWebGLScene()` says so, so its ~170KB gzip never blocks first paint
  * or ships to reduced-motion/low-end/touch visitors at all.
  */
-import { capabilities, canUseWebGLScene } from './core/device.js';
-import { initSmoothScroll } from './core/smooth-scroll.js';
-import { initCursor } from './core/cursor.js';
-import { initNav, initScrollProgress, markActiveLink } from './core/nav.js';
-import { initReveals, clearRevealTriggers } from './core/reveal.js';
-import { initTransitions } from './core/transitions.js';
-import { initFallback, initFlowyVideo } from './three/fallback.js';
+import { capabilities, canUseWebGLScene } from './core/device.js?v=20260922';
+import { initSmoothScroll } from './core/smooth-scroll.js?v=20260922';
+import { initCursor } from './core/cursor.js?v=20260922';
+import { initNav, initScrollProgress, markActiveLink } from './core/nav.js?v=20260922';
+import { initReveals, clearRevealTriggers } from './core/reveal.js?v=20260922';
+import { initTransitions } from './core/transitions.js?v=20260922';
+import { initFallback, initFlowyVideo } from './three/fallback.js?v=20260922';
 
-import * as homePage from './pages/home.js';
-import * as aboutPage from './pages/about.js';
-import * as capabilitiesPage from './pages/capabilities.js';
-import * as whyIndrevaPage from './pages/why-indreva.js';
-import * as visionPage from './pages/vision.js';
-import * as contactPage from './pages/contact.js';
+import * as homePage from './pages/home.js?v=20260922';
+import * as aboutPage from './pages/about.js?v=20260922';
+import * as capabilitiesPage from './pages/capabilities.js?v=20260922';
+import * as whyIndrevaPage from './pages/why-indreva.js?v=20260922';
+import * as visionPage from './pages/vision.js?v=20260922';
+import * as contactPage from './pages/contact.js?v=20260922';
 
 const PAGE_MODULES = {
   home: homePage,
@@ -53,7 +53,7 @@ async function boot() {
   // their own (no per-frame JS needed for them at all).
   if (canUseWebGLScene()) {
     try {
-      sceneModule = await import('./three/scene.js');
+      sceneModule = await import('./three/scene.js?v=20260922');
       await sceneModule.initScene({
         gsap, ScrollTrigger,
         canvas: document.getElementById('scene-canvas'),
