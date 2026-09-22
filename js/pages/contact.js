@@ -3,16 +3,10 @@
  * success state, submitting via EmailJS (loaded as a classic <script> in
  * contact.html — see index.js of that SDK) straight from the browser to
  * the owner's inbox, no backend of our own required.
- *
- * Fill these in from the EmailJS dashboard (emailjs.com) before this goes
- * live: Account > General for PUBLIC_KEY, Email Services for SERVICE_ID,
- * Email Templates for TEMPLATE_ID. The template's variables must match the
- * keys FormData collects below: name, company, email, phone, requirement,
- * quantity.
  */
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID = 'service_yndtllm';
+const EMAILJS_TEMPLATE_ID = 'template_derstma';
+const EMAILJS_PUBLIC_KEY = 'Ol-E41z7_j3bWsqtA';
 const VALIDATORS = {
   name: (v) => v.trim().length >= 2 || 'Enter your full name.',
   company: (v) => v.trim().length >= 2 || 'Enter your company name.',
