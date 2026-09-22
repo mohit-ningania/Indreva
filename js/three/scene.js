@@ -32,10 +32,10 @@
  *                         transitions.js.
  * ============================================================================
  */
-import * as THREE from '../vendor/three.module.min.js?v=17';
-import { createMonogram, applyDispersion } from './monogram.js?v=17';
-import { getWaypoint, VISION_STAGES } from './waypoints.js?v=17';
-import { capabilities } from '../core/device.js?v=17';
+import * as THREE from '../vendor/three.module.min.js?v=19';
+import { createMonogram, applyDispersion } from './monogram.js?v=19';
+import { getWaypoint, VISION_STAGES } from './waypoints.js?v=19';
+import { capabilities } from '../core/device.js?v=19';
 
 let renderer, camera, scene, monogram, scrollRig;
 let clock;
@@ -641,6 +641,15 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
   const HANDOFF_EASE = 0.06;
 
   let queued = false;
+  // Fraction of the section's scroll held at rest on the first/last stage
+  // before and after the track travels, so entering and leaving the pinned
+  // section doesn't start or stop the carousel mid-stride.
+  const TRACK_DWELL = 0.1;
+  const easeTrack = (p) => {
+    const t = Math.min(1, Math.max(0, (p - TRACK_DWELL) / (1 - 2 * TRACK_DWELL)));
+    return t * t * (3 - 2 * t); // smoothstep: zero velocity at both ends
+  };
+
   const update = () => {
     queued = false;
     const rect = wrapper.getBoundingClientRect();
@@ -672,10 +681,18 @@ export function bindVisionHorizontal(wrapper, track, onStageChange) {
 
     const progress = Math.min(1, Math.max(0, rawProgress));
 
-    gsapRef.set(track, { x: -progress * extra });
+    // The track's own travel is eased, not raw progress. Linear meant the
+    // stages began sliding the instant the section pinned and stopped dead
+    // at the far end — the carousel lurched into motion and halted rather
+    // than settling. TRACK_DWELL holds the first and last stage still for a
+    // moment at each end, and smoothstep accelerates and decelerates the
+    // travel between them.
+    const eased = easeTrack(progress);
+
+    gsapRef.set(track, { x: -eased * extra });
 
     const steps = VISION_STAGES.length - 1;
-    const scaled = progress * steps;
+    const scaled = eased * steps;
     const idx = Math.min(Math.floor(scaled), steps - 1);
     const localT = scaled - idx;
     const a = VISION_STAGES[idx];

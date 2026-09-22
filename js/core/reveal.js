@@ -15,7 +15,7 @@
  * and swaps every translate+fade for an opacity-only fade with no
  * movement, per the brief's "fall back to simple fades" requirement.
  */
-import { capabilities } from './device.js?v=17';
+import { capabilities } from './device.js?v=19';
 
 export function splitWords(el) {
   if (el.dataset.split === 'done') return el.querySelectorAll('.split-word');
@@ -121,7 +121,41 @@ export function initReveals(gsap, ScrollTrigger) {
 
   document.querySelectorAll('[data-split-headline]').forEach((el) => revealHeadline(el, gsap));
   initParallax(gsap);
+  initCanvasHandoff(gsap);
   refreshOnImageLoad(ScrollTrigger);
+}
+
+/**
+ * The floating 3D mark lives on a fixed canvas *behind* the page content, so
+ * a full-width opaque photograph scrolling over it used to slice it off at
+ * the image's hard edge — the mark and the picture read as two unrelated
+ * layers colliding rather than one composition.
+ *
+ * Instead the mark dissolves as a .media-hero rises to cover it, stays out
+ * while the photograph owns the screen, and returns once it has passed. The
+ * timeline is scrubbed to scroll so the handoff tracks the scroll position
+ * both ways rather than firing as a one-shot.
+ *
+ * Opacity, not autoAlpha: scene.js owns the canvas's visibility/layout for
+ * its own per-page framing, and toggling visibility here would fight it.
+ */
+function initCanvasHandoff(gsap) {
+  const canvas = document.getElementById('scene-canvas');
+  if (!canvas) return; // no-WebGL path drops the canvas entirely
+  // A page swap kills the previous page's triggers wherever they happened to
+  // be, so start from a known-visible canvas rather than whatever opacity the
+  // outgoing page's handoff was mid-way through.
+  gsap.set(canvas, { opacity: 1 });
+  const heroes = document.querySelectorAll('#page-content .media-hero');
+  if (!heroes.length) return;
+  heroes.forEach((hero) => {
+    gsap.timeline({
+      scrollTrigger: { trigger: hero, start: 'top 90%', end: 'bottom 10%', scrub: 0.6 },
+    })
+      .to(canvas, { opacity: 0, ease: 'power1.out', duration: 0.25 })
+      .to(canvas, { opacity: 0, duration: 0.5 })
+      .to(canvas, { opacity: 1, ease: 'power1.in', duration: 0.25 });
+  });
 }
 
 /**

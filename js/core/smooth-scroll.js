@@ -5,7 +5,7 @@
  * the raw, stepped native one. Disabled outright on touch devices and under
  * prefers-reduced-motion — native scroll takes over transparently there.
  */
-import { canUseSmoothScroll } from './device.js?v=17';
+import { canUseSmoothScroll } from './device.js?v=19';
 
 let lenisInstance = null;
 

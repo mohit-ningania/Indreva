@@ -612,11 +612,15 @@ body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
   padding-top: var(--sp-8);
   /* The ghost word is set nowrap at a vw-scaled size, so on a narrow screen
      a long one ("ACCOUNTABLE") runs wider than the viewport and drags a
-     horizontal scrollbar onto the whole page. Clipping here contains it —
-     the bottom padding first gives the inset's overhang somewhere to live
-     inside this box, so the clip never eats it. */
-  padding-bottom: var(--sp-9);
-  overflow: hidden;
+     horizontal scrollbar onto the whole page. Only the horizontal axis
+     needs containing: `overflow: hidden` also cropped the inset frame that
+     deliberately hangs below this box, shaving its bottom corner and its
+     shadow. `clip` on one axis leaves the other genuinely visible, which
+     `hidden` cannot do. The bottom padding backs it up on older engines
+     that don't support `clip` and fall back to visible. */
+  padding-bottom: var(--sp-10);
+  overflow-x: clip;
+  overflow-y: visible;
 }
 .layer-feature__ghost { top: 0; left: -0.04em; }
 
@@ -669,22 +673,50 @@ body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
    image beneath rather than composited into it.
    It always hangs off the side *away* from the copy column: overlapping
    toward the copy puts a raised frame straight through the body text. */
+/* Two nested elements, deliberately. The outer one is what [data-parallax]
+   drives (GSAP writes its transform every scroll frame); the inner frame is
+   what the hover lift animates in CSS. Putting both on one element would
+   have a CSS transition and a GSAP tween writing the same transform — the
+   exact conflict that made these images shake on scroll. */
 .layer-feature__inset {
   position: absolute;
   z-index: 2;
+  width: 31%;
+  left: 3%;
+  /* Hangs mostly *below* the main frame rather than sitting on top of it:
+     at a heavier overlap it stopped reading as two stacked photographs and
+     just looked like one image with a patch over its corner. */
+  bottom: -24%;
+}
+.layer-feature--reverse .layer-feature__inset {
+  left: auto;
+  right: 3%;
+}
+
+.layer-feature__inset-frame {
   margin: 0;
-  width: 36%;
   aspect-ratio: 3 / 4;
-  left: 5%;
-  bottom: -16%;
   border-radius: 16px;
   overflow: hidden;
   border: 6px solid var(--surface-bg);
   box-shadow: 0 30px 60px -28px rgba(28, 33, 38, 0.6);
+  transition: transform var(--dur-base) var(--ease-precision),
+              box-shadow var(--dur-base) var(--ease-precision);
 }
-.layer-feature--reverse .layer-feature__inset {
-  left: auto;
-  right: 5%;
+
+/* The stack answers the pointer: hovering anywhere over the composition
+   lifts the near frame, so the two planes separate on contact instead of
+   reading as one flat collage. */
+.layer-feature__stack:hover .layer-feature__inset-frame {
+  transform: translateY(-12px) scale(1.04);
+  box-shadow: 0 48px 84px -30px rgba(28, 33, 38, 0.72);
+}
+
+@media (hover: none) {
+  .layer-feature__stack:hover .layer-feature__inset-frame {
+    transform: none;
+    box-shadow: 0 30px 60px -28px rgba(28, 33, 38, 0.6);
+  }
 }
 
 .layer-feature__copy {
@@ -799,7 +831,8 @@ body[data-page="vision"] .ghost-type { color: rgba(184, 188, 194, 0.09); }
   align-items: end;
   isolation: isolate;
   padding-top: var(--sp-8);
-  overflow: hidden; /* contains the nowrap ghost word — see .layer-feature */
+  overflow-x: clip; /* contains the nowrap ghost word — see .layer-feature */
+  overflow-y: visible;
 }
 .photo-mosaic__ghost { top: 0; right: 0; }
 
