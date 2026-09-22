@@ -12,7 +12,7 @@
  * shared link, `/about.html`) and resolves it to the same route, so those
  * keep working rather than 404ing.
  */
-import { scrollToTopInstant } from './smooth-scroll.js?v=19';
+import { scrollToTopInstant } from './smooth-scroll.js?v=20';
 
 const ROUTES = {
   '/': { file: 'index.html', key: 'home' },

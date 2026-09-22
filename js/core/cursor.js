@@ -4,7 +4,7 @@
  * following (buttery on 60Hz and 120Hz+ displays alike, unlike a hand-rolled
  * per-frame lerp).
  */
-import { capabilities } from './device.js?v=19';
+import { capabilities } from './device.js?v=20';
 
 const INTERACTIVE_SELECTOR = 'a, button, input, textarea, select, [role="button"], .cursor-interactive';
 
