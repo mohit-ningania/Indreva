@@ -34,8 +34,30 @@ function validateField(field) {
   return false;
 }
 
+// The SDK's own <script> tag lives in contact.html's footer, outside
+// #page-content — transitions.js's SPA swap only replaces that element, it
+// never re-executes <script> tags from the rest of the fetched document, so
+// arriving here via an in-app nav click (rather than a full page load)
+// leaves window.emailjs permanently undefined otherwise. Loading it here
+// instead, on this page's own init(), works regardless of how the visitor
+// arrived. Cached so navigating away and back doesn't inject a second copy.
+let emailjsReady = null;
+function loadEmailJS() {
+  if (window.emailjs) return Promise.resolve();
+  if (!emailjsReady) {
+    emailjsReady = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'js/vendor/emailjs.min.js?v=20260922';
+      script.onload = resolve;
+      script.onerror = () => { emailjsReady = null; reject(new Error('EmailJS SDK failed to load')); };
+      document.head.appendChild(script);
+    });
+  }
+  return emailjsReady;
+}
+
 async function submitEnquiry(data) {
-  if (!window.emailjs) throw new Error('EmailJS SDK failed to load');
+  await loadEmailJS();
   return window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, data, EMAILJS_PUBLIC_KEY);
 }
 
@@ -80,6 +102,8 @@ export function init({ gsap }) {
   form = document.getElementById('enquiry-form');
   gsapRef = gsap;
   if (!form) return;
+
+  loadEmailJS().catch(() => {}); // start now so it's likely ready by submit time; submitEnquiry awaits it regardless
 
   form.querySelectorAll('input, textarea').forEach((field) => {
     field.addEventListener('blur', () => validateField(field));
